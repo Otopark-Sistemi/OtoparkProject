@@ -25,7 +25,7 @@ export const LoginPage = () => {
 
   if (loggedIn) {
     // Eğer kullanıcı giriş yaptıysa, admin sayfasına yönlendir.
-    return <Navigate to="/admin" />;
+    return <Navigate to="/ParkingLotSetup" />;
   }
 
   return (
