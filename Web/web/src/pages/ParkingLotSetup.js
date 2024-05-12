@@ -1,218 +1,38 @@
 import React, { useState, useEffect } from "react";
 
 export const ParkingLotSetup = () => {
-  const [blocks, setBlocks] = useState([]);
+  // fetchData fonksiyonunu dışarıda tanımla
+  const fetchData = async () => {
+    try {
+      const response = await fetch("http://192.168.138.19:8082/blok/getAll", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        mode: "cors",
+      });
 
-  useEffect(() => {
-    setBlocks([
-      {
-        name: "A",
-        capacity: 5,
-        parkingSpaces: [
-          {
-            id: 1,
-            filled: true,
-            plate: "34 ABC 56",
-            entryTime: new Date("2024-05-10T12:34"),
-          },
-          { id: 2, filled: false },
-          {
-            id: 3,
-            filled: true,
-            plate: "78 XYZ 90",
-            entryTime: new Date("2024-05-10T10:45"),
-          },
-          { id: 4, filled: false },
-          {
-            id: 5,
-            filled: true,
-            plate: "12 DEF 34",
-            entryTime: new Date("2024-05-10T08:20"),
-          },
-        ],
-      },
-      {
-        name: "B",
-        capacity: 8,
-        parkingSpaces: [
-          { id: 1, filled: false },
-          {
-            id: 2,
-            filled: true,
-            plate: "56 GHI 78",
-            entryTime: new Date("2024-05-10T09:15"),
-          },
-          {
-            id: 3,
-            filled: true,
-            plate: "90 JKL 12",
-            entryTime: new Date("2024-05-10T07:30"),
-          },
-          { id: 4, filled: false },
-          {
-            id: 5,
-            filled: true,
-            plate: "34 MNO 56",
-            entryTime: new Date("2024-05-10T13:45"),
-          },
-          { id: 6, filled: false },
-          { id: 7, filled: false },
-          {
-            id: 8,
-            filled: true,
-            plate: "78 PQR 90",
-            entryTime: new Date("2024-05-10T11:20"),
-          },
-        ],
-      },
-      {
-        name: "C",
-        capacity: 12,
-        parkingSpaces: [
-          {
-            id: 1,
-            filled: true,
-            plate: "12 ABC 34",
-            entryTime: new Date("2024-05-10T09:30"),
-          },
-          {
-            id: 2,
-            filled: true,
-            plate: "56 DEF 78",
-            entryTime: new Date("2024-05-10T10:15"),
-          },
-          { id: 3, filled: false },
-          { id: 4, filled: false },
-          { id: 5, filled: false },
-          { id: 6, filled: false },
-          {
-            id: 7,
-            filled: true,
-            plate: "90 GHI 12",
-            entryTime: new Date("2024-05-10T11:45"),
-          },
-          { id: 8, filled: false },
-          { id: 9, filled: false },
-          { id: 10, filled: false },
-          { id: 11, filled: false },
-          { id: 12, filled: false },
-          { id: 13, filled: false },
-          { id: 14, filled: false },
-          { id: 15, filled: false },
-        ],
-      },
-      {
-        name: "D",
-        capacity: 12,
-        parkingSpaces: [
-          {
-            id: 1,
-            filled: true,
-            plate: "12 ABC 34",
-            entryTime: new Date("2024-05-10T09:30"),
-          },
-          {
-            id: 2,
-            filled: true,
-            plate: "56 DEF 78",
-            entryTime: new Date("2024-05-10T10:15"),
-          },
-          { id: 3, filled: false },
-          { id: 4, filled: false },
-          { id: 5, filled: false },
-          { id: 6, filled: false },
-          {
-            id: 7,
-            filled: true,
-            plate: "90 GHI 12",
-            entryTime: new Date("2024-05-10T11:45"),
-          },
-          { id: 8, filled: false },
-          { id: 9, filled: false },
-          { id: 10, filled: false },
-          { id: 11, filled: false },
-          { id: 12, filled: false },
-          { id: 13, filled: false },
-          { id: 14, filled: false },
-          { id: 15, filled: false },
-        ],
-      },
-
-      // Diğer blokların bilgileri buraya eklenecek...
-    ]);
-  }, []);
-
-  const handleSpaceHover = (blockIndex, spaceId) => {
-    const block = blocks[blockIndex];
-    const space = block.parkingSpaces.find((space) => space.id === spaceId);
-    if (space) {
-      if (space.filled) {
-        const entryTime = space.entryTime;
-        const currentTime = new Date();
-        const diffMs = currentTime - entryTime;
-        const diffHours = Math.floor(diffMs / 1000 / 60 / 60);
-        return (
-          <div>
-
-            <div>Plaka:</div>
-
-     
-            <div>{space.plate}</div>
-            <div>Süre:</div>
-            <div>{diffHours} saat</div>
-          </div>
-        );
-      } else {
-        return "Bu park yeri boş.";
+      if (!response.ok) {
+        throw new Error("Bir hata oluştu. Hata kodu: " + response.status);
       }
+
+      const data = await response.json();
+      console.log("Gelen veri:", data);
+      // Veriyi istediğiniz şekilde işleyebilirsiniz, örneğin state'e atayabilirsiniz.
+    } catch (error) {
+      console.error("Veri getirilirken bir hata oluştu:", error.message);
     }
-    return "";
   };
 
   return (
-    <>
-      <div className="flex flex-col justify-center h-screen items-center">
-        <div>
-          <h1 className="mb-20 text-5xl">Otopark</h1>
-        </div>
-        <div
-          className="flex justify-center items-center bg-orange-200 p-10 rounded-3xl shadow-2xl overflow-auto"
-          style={{ maxHeight: "40rem", maxWidth: "80rem" }}
-        >
-          <div className="h-96 justify-center items-center mx-auto">
-            {blocks.map((block, blockIndex) => (
-              <div
-                key={`block-${blockIndex}`}
-                className="mb-4 justify-start items-center flex flex-row gap gap-2"
-              >
-                <div className="text-center h-20 w-40">
-                  <h3 className="bg-slate-300 text-center text-lg font-bold p-6 rounded-full">
-                    Blok {block.name}
-                  </h3>
-                </div>
-
-                <div className="bg-slate-50 flex flex-wrap p-2">
-                  {block.parkingSpaces.map((space) => (
-                    <div
-                      key={`block-${blockIndex}-parking-space-${space.id}`}
-                      className={`border h-40 w-24 flex justify-center items-center rounded-md m-1 relative ${
-                        space.filled
-                          ? "bg-red-200 border-red-400"
-                          : "bg-green-200 border-green-400"
-                      }`}
-                    >
-                      <div className="space-info cursor-pointer absolute bottom-8 left-0 right-0 bg-white text-lg text-center hover:opacity-100 transition-opacity duration-300 opacity-0">
-                        {handleSpaceHover(blockIndex, space.id)}
-                      </div>
-                      {space.id}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </>
+    <div>
+      {/* Butonun içinde fetchData fonksiyonunu çağır */}
+      <button
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        onClick={fetchData}
+      >
+        Veri Getir
+      </button>
+    </div>
   );
 };

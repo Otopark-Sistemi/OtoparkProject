@@ -11,50 +11,43 @@ const ParkingLotSetup = () => {
     setBlockName(e.target.value);
   };
 
+  
+
   // Araç park yeri sayısını güncelleyen fonksiyon
   const handleParkingSpaceChange = (e) => {
     setNumParkingSpaces(parseInt(e.target.value));
   };
 
-  const handleSubmit = async () => {
-    try {
-      // Yeni blok bilgisini oluştur
-      const newBlock = {
-        name: blockName,
-        capacity: numParkingSpaces,
-      };
-      // Backend'e gönder
-      const response = await fetch("192.168.35.48:8082/blok/create", {
-        method: "POST",
+const handleSubmit = async () => {
+  try {
+    const response = await fetch(
+      "http://192.168.138.19:8082/blok/getAll",
+      {
+        method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
         mode: "cors",
-        body: JSON.stringify(newBlock),
-      });
-      // Gönderme başarılı ise
-      if (response.ok) {
-        // Blok bilgisini bloklara ekle
-        setBlocks([...blocks, newBlock]);
-        // Input alanlarını temizle
-        setBlockName("");
-        setNumParkingSpaces(10);
-        // Hata mesajını temizle
-        setError("");
-      } else {
-        // Gönderme başarısız ise
-        throw new Error("Blok eklenemedi.");
       }
-    } catch (error) {
-      // Hata oluştuğunda
-      setError(error.message);
-    }
-  };
+    );
 
-  const handleReset = () => {
-    // Blok bilgilerini sıfırla
-    setBlocks([]);
-  };
+    // Cevap başarılı ise
+    if (response.ok) {
+      const data = await response.json(); // Gelen veriyi JSON olarak çözümle
+      console.log(data); // Veriyi konsola yazdır
+    } else {
+      throw new Error("Blok eklenemedi. Hata kodu: " + response.status);
+    }
+  } catch (error) {
+    // Hata oluştuğunda
+    console.error(error.message);
+  }
+};
+
+const handleReset = () => {
+  // Blok bilgilerini sıfırla
+  setBlocks([]);
+};
 
   // Blok ve araç park yeri sayısına göre görsel oluşturma fonksiyonu
   const generateParkingLayout = () => {
