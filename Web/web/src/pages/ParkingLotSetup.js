@@ -153,7 +153,10 @@ export const ParkingLotSetup = () => {
         const diffHours = Math.floor(diffMs / 1000 / 60 / 60);
         return (
           <div>
+
             <div>Plaka:</div>
+
+     
             <div>{space.plate}</div>
             <div>Süre:</div>
             <div>{diffHours} saat</div>
