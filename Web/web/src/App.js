@@ -1,8 +1,9 @@
 import React from "react";
 import { Routes, Route, Link, NavLink, useNavigate } from "react-router-dom";
 import Admin from "./pages/Admin";
-import { LoginPage } from "./pages/LoginPage";
+import Login, { LoginPage } from "./pages/Login";
 import { ParkingLotSetup } from "./pages/ParkingLotSetup";
+import SignUp from "./pages/SignUp";
 
 
 
@@ -19,8 +20,10 @@ export default function App() {
       <Routes >
         <Route
           path="/"
-          element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
+          element={<Login onLoginSuccess={handleLoginSuccess} />}
         />
+      
+        <Route path="/SignUp" element={<SignUp />} />
         <Route path="/Admin" element={<Admin />} />
        <Route path="/ParkingLotSetup" element={<ParkingLotSetup/>} /> 
       </Routes>
