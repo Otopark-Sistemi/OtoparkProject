@@ -65,6 +65,79 @@ export const ParkingLotSetup = () => {
           },
         ],
       },
+      {
+        name: "C",
+        capacity: 12,
+        parkingSpaces: [
+          {
+            id: 1,
+            filled: true,
+            plate: "12 ABC 34",
+            entryTime: new Date("2024-05-10T09:30"),
+          },
+          {
+            id: 2,
+            filled: true,
+            plate: "56 DEF 78",
+            entryTime: new Date("2024-05-10T10:15"),
+          },
+          { id: 3, filled: false },
+          { id: 4, filled: false },
+          { id: 5, filled: false },
+          { id: 6, filled: false },
+          {
+            id: 7,
+            filled: true,
+            plate: "90 GHI 12",
+            entryTime: new Date("2024-05-10T11:45"),
+          },
+          { id: 8, filled: false },
+          { id: 9, filled: false },
+          { id: 10, filled: false },
+          { id: 11, filled: false },
+          { id: 12, filled: false },
+          { id: 13, filled: false },
+          { id: 14, filled: false },
+          { id: 15, filled: false },
+        ],
+      },
+      {
+        name: "D",
+        capacity: 12,
+        parkingSpaces: [
+          {
+            id: 1,
+            filled: true,
+            plate: "12 ABC 34",
+            entryTime: new Date("2024-05-10T09:30"),
+          },
+          {
+            id: 2,
+            filled: true,
+            plate: "56 DEF 78",
+            entryTime: new Date("2024-05-10T10:15"),
+          },
+          { id: 3, filled: false },
+          { id: 4, filled: false },
+          { id: 5, filled: false },
+          { id: 6, filled: false },
+          {
+            id: 7,
+            filled: true,
+            plate: "90 GHI 12",
+            entryTime: new Date("2024-05-10T11:45"),
+          },
+          { id: 8, filled: false },
+          { id: 9, filled: false },
+          { id: 10, filled: false },
+          { id: 11, filled: false },
+          { id: 12, filled: false },
+          { id: 13, filled: false },
+          { id: 14, filled: false },
+          { id: 15, filled: false },
+        ],
+      },
+
       // Diğer blokların bilgileri buraya eklenecek...
     ]);
   }, []);
@@ -96,24 +169,26 @@ export const ParkingLotSetup = () => {
   return (
     <>
       <div className="flex flex-col justify-center h-screen items-center">
-        <div className="flex flex-col justify-center  p-10 rounded-3xl shadow-2xl items-center">
-          <div>
-            {" "}
-            <h1 className="mb-40 text-5xl">Otopark</h1>
-          </div>
-          <div className="bg-green justify-center items-center mx-auto ">
+        <div>
+          <h1 className="mb-20 text-5xl">Otopark</h1>
+        </div>
+        <div
+          className="flex justify-center items-center bg-orange-200 p-10 rounded-3xl shadow-2xl overflow-auto"
+          style={{ maxHeight: "40rem", maxWidth: "80rem" }}
+        >
+          <div className="h-96 justify-center items-center mx-auto">
             {blocks.map((block, blockIndex) => (
               <div
                 key={`block-${blockIndex}`}
                 className="mb-4 justify-start items-center flex flex-row gap gap-2"
               >
-                <div className="text-center h-20 w-40"> 
-                  <h3 className="bg-slate-300 text-center text-lg font-bold p-6  rounded-full">
+                <div className="text-center h-20 w-40">
+                  <h3 className="bg-slate-300 text-center text-lg font-bold p-6 rounded-full">
                     Blok {block.name}
                   </h3>
                 </div>
 
-                <div className="bg-slate-50 flex  flex-wrap  p-2 overflow-auto">
+                <div className="bg-slate-50 flex flex-wrap p-2">
                   {block.parkingSpaces.map((space) => (
                     <div
                       key={`block-${blockIndex}-parking-space-${space.id}`}
@@ -123,7 +198,7 @@ export const ParkingLotSetup = () => {
                           : "bg-green-200 border-green-400"
                       }`}
                     >
-                      <div className="space-info absolute bottom-8 left-0 right-0 bg-white text-lg text-center hover:opacity-100 transition-opacity duration-300 opacity-0">
+                      <div className="space-info cursor-pointer absolute bottom-8 left-0 right-0 bg-white text-lg text-center hover:opacity-100 transition-opacity duration-300 opacity-0">
                         {handleSpaceHover(blockIndex, space.id)}
                       </div>
                       {space.id}
