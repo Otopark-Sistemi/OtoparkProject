@@ -2,7 +2,7 @@ import React from "react";
 import { Routes, Route, Link, NavLink, useNavigate } from "react-router-dom";
 import Admin from "./pages/Admin";
 import Login, { LoginPage } from "./pages/Login";
-import { ParkingLotSetup } from "./pages/ParkingLotSetup";
+import ParkingLotSetup  from "./pages/ParkingLotSetup";
 import SignUp from "./pages/SignUp";
 
 
