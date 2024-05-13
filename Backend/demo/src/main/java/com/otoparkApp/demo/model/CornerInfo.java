@@ -1,9 +1,7 @@
 package com.otoparkApp.demo.model;
 
 
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,15 +12,11 @@ import java.util.List;
 @Getter
 @Setter
 public class CornerInfo {
-
-
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
     private String block_name;
-
+    private String corner_number;
     @ElementCollection
     private List<String> corner_number_list;
-
-
 }

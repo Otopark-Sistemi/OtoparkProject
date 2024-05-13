@@ -1,14 +1,13 @@
 package com.otoparkApp.demo.service;
 
 
+import com.otoparkApp.demo.model.Arac;
 import com.otoparkApp.demo.model.Blok;
 import com.otoparkApp.demo.repository.BlokRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -27,6 +26,7 @@ public class BlokService {
 
        long blok_size = blok.getKapasite();
 
+       Set<Arac>aracList=new HashSet<>();
 
 
 
@@ -34,8 +34,12 @@ public class BlokService {
             park_durum_list.put(i + 1, false);
         }
 
+        blok.setArac(aracList);
+
 
         try {
+
+            log.info("BLOK OLUŞTURULDU.");
             blokRepository.save(blok);
         } catch (Exception e) {
             log.error("Blok oluşturulamadı. Hata: " + e.getMessage());
@@ -46,6 +50,8 @@ public class BlokService {
 
 
     public List<Blok> getAllBlok() {
+
+        log.info("GET ALL FONKSİYONUNA GİRDİ");
         return blokRepository.findAll();
     }
 
