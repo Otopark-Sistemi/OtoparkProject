@@ -1,12 +1,20 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./ParkingLotSetup.css";
 
 const ParkingLotSetup = () => {
   const [veri, setVeri] = useState([]);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      fetchData();
+    }, 4000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   const fetchData = async () => {
     try {
-      const response = await fetch("http://192.168.35.80:8082/blok/getAll");
+      const response = await fetch("http://192.168.35.217:8082/blok/getAll");
       const data = await response.json();
       setVeri(data);
       console.log("Gelen Veri:", data);
@@ -17,12 +25,6 @@ const ParkingLotSetup = () => {
 
   return (
     <div>
-      <button className="bg-black text-white" onClick={fetchData}>
-        Veri Al
-      </button>
-
-      <h2>Veriler:</h2>
-
       <h1 className="text-3xl text-center font-bold text-white mb-4">
         OTOPARK PANELİ
       </h1>

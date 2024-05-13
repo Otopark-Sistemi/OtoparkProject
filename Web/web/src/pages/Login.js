@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Routes, Route, Link, NavLink, useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const url = "http://192.168.35.217:8082/user/login";
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -14,7 +15,7 @@ const Login = () => {
     navigate("/ParkingLotSetup");
   };
 
-
+                   
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
@@ -25,7 +26,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://192.168.35.48:8082/user/login", {
+      const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
