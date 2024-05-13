@@ -20,6 +20,7 @@ public class Blok {
 
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String blok_adi;
     private long kapasite;
