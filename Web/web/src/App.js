@@ -4,6 +4,7 @@ import Admin from "./pages/Admin";
 import Login, { LoginPage } from "./pages/Login";
 import ParkingLotSetup  from "./pages/ParkingLotSetup";
 import SignUp from "./pages/SignUp";
+import CanvasApi from "./pages/CanvasApi";
 
 
 
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/SignUp" element={<SignUp />} />
         <Route path="/Admin" element={<Admin />} />
        <Route path="/ParkingLotSetup" element={<ParkingLotSetup/>} /> 
+       <Route path="/CanvasApi" element={<CanvasApi/>} /> 
       </Routes>
     </>
   );
