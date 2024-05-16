@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import backgroundImage from "../img/bg.jpeg";
+import backgroundImage from "../img/bg.jpeg"; // Background image
 
 function CanvasApi() {
   const canvasRef = useRef(null);
@@ -8,10 +8,12 @@ function CanvasApi() {
   const [colorIndex, setColorIndex] = useState(0);
   const [history, setHistory] = useState([]);
   const [redoHistory, setRedoHistory] = useState([]);
-  const [completed, setCompleted] = useState(false);
+  const [completed, setCompleted] = useState(false); // Completion status
   const [parkArea, setParkArea] = useState("");
+  const [areaNameInput, setAreaNameInput] = useState("");
+  const [sentPolygons, setSentPolygons] = useState([]); // Sent polygons
 
-  const colors = ["red", "blue", "green", "yellow"];
+  const colors = ["red", "blue", "green", "yellow"]; // Different colors
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -36,20 +38,24 @@ function CanvasApi() {
       const x = (event.clientX - rect.left) * scaleX;
       const y = (event.clientY - rect.top) * scaleY;
 
+      // Tıklanan noktanın belirlenen alanın içinde olup olmadığını kontrol et
       const isInsidePolygon = polygons.some((polygon) =>
         isPointInsidePolygon({ x, y }, polygon.points)
       );
 
+      // Eğer tıklanan nokta belirlenen alanın içindeyse, hata mesajı göster ve işlemi sonlandır
       if (isInsidePolygon) {
         alert("Lütfen seçilen alan dışında bir nokta belirleyiniz.");
         return;
       }
 
+      // Belirlenen alanda tıklama yapıldığında, yeni bir nokta eklemek yerine hata mesajı göster
       if (clickedPoints.length >= 4) {
         alert("Belirlenen alan içerisine tekrardan işaretleme yapılamaz.");
         return;
       }
 
+      // Yeni noktayı tıklama listesine ekle
       const newPoint = { x, y };
       setHistory((prev) => [
         ...prev,
@@ -84,6 +90,7 @@ function CanvasApi() {
   }, [history, redoHistory]);
 
   useEffect(() => {
+    // If all parking areas are added, set the completion status to true
     if (polygons.length > 0) {
       setCompleted(true);
     } else {
@@ -110,12 +117,27 @@ function CanvasApi() {
   };
 
   const handleSend = () => {
-    if (clickedPoints.length === 4) {
+    if (clickedPoints.length === 4 && areaNameInput !== "") {
       const newPolygon = {
         points: clickedPoints,
         color: colors[colorIndex],
-        regionName: `Park Yeri ${polygons.length + 1}`,
+        regionName: areaNameInput,
       };
+
+      // Kontrol et: Yeni polygon, daha önce gönderilmiş bir polygon ile aynı mı?
+      const isDuplicate = sentPolygons.some((polygon) =>
+        polygon.points.every(
+          (point, index) =>
+            point.x === newPolygon.points[index].x &&
+            point.y === newPolygon.points[index].y
+        )
+      );
+
+      if (isDuplicate) {
+        alert("Bu park alanı zaten gönderildi.");
+        return;
+      }
+
       setPolygons((prev) => [...prev, newPolygon]);
       setClickedPoints([]);
       setColorIndex((prev) => (prev + 1) % colors.length);
@@ -206,32 +228,42 @@ function CanvasApi() {
     context.stroke();
   };
 
-  const sendParkAreaToBackend = () => {
-    const parkAreaJSON = {
-      areaName: parkArea,
-      polygons: polygons,
-    };
-
-    fetch("BACKEND_URL", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(parkAreaJSON),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log(data);
-      })
-      .catch((error) => {
-        console.error("There was a problem with the fetch operation:", error);
-      });
+const sendParkAreaToBackend = () => {
+  const parkAreaJSON = {
+    blockName: "A", // Block name
+    parkNumber: "1", // Park number
+    coordinates: clickedPoints.map((point) => ({ x: point.x, y: point.y })), // Convert clickedPoints to the desired format
   };
+
+  console.log("Gönderilecek veri:", parkAreaJSON); // Veriyi konsola yazdır
+
+  fetch("http://192.168.35.48:8082/area/create", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(parkAreaJSON),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log(data); // Backend'den gelen yanıtı kontrol et
+      // Başarıyla gönderilen polygonları kaydet
+      setSentPolygons((prev) => [...prev, ...polygons]);
+      // Polygons ve clickedPoints state'lerini sıfırla
+      setPolygons([]);
+      setClickedPoints([]);
+      setParkArea("");
+    })
+    .catch((error) => {
+      console.error("There was a problem with the fetch operation:", error);
+    });
+};
+
 
   const checkAreaOverlap = (newAreaPoints, newAreaBlock) => {
     polygons.forEach((polygon) => {
@@ -334,13 +366,23 @@ function CanvasApi() {
     ));
   };
 
+  const handleAddPolygon = () => {
+    if (clickedPoints.length === 4) {
+      const areaName = prompt("Lütfen park alanı adı giriniz (A, B, C...):");
+      if (areaName) {
+        setParkArea(areaName);
+        handleSend();
+      }
+    }
+  };
+
   return (
     <div className="p-1 flex flex-row rounded-xl">
       <div className="p-1 w-[80%]">
         <canvas ref={canvasRef} style={{ width: "100%", height: "auto" }} />
 
         <button
-          onClick={handleSend}
+          onClick={handleAddPolygon}
           className="transition-all duration-300 mt-5 font-bold py-2 px-4 rounded"
           style={{
             background: clickedPoints.length === 4 ? "blue" : "white",
@@ -352,7 +394,7 @@ function CanvasApi() {
           Park Yeri Ekle
         </button>
         <button
-          onClick={() => sendParkAreaToBackend()}
+          onClick={sendParkAreaToBackend}
           className="transition-all duration-300 mt-5 ml-4 font-bold py-2 px-4 rounded"
           style={{
             background: parkArea !== "" ? "green" : "white",
@@ -374,3 +416,4 @@ function CanvasApi() {
 }
 
 export default CanvasApi;
+
