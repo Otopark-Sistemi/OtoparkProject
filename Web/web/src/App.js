@@ -5,6 +5,7 @@ import Login, { LoginPage } from "./pages/Login";
 import ParkingLotSetup  from "./pages/ParkingLotSetup";
 import SignUp from "./pages/SignUp";
 import CanvasApi from "./pages/CanvasApi";
+import CanvaAPI from "./pages/CanvaAPI";
 
 
 
@@ -18,16 +19,17 @@ export default function App() {
 
   return (
     <>
-      <Routes >
+      <Routes>
         <Route
           path="/"
           element={<Login onLoginSuccess={handleLoginSuccess} />}
         />
-      
+
         <Route path="/SignUp" element={<SignUp />} />
         <Route path="/Admin" element={<Admin />} />
-       <Route path="/ParkingLotSetup" element={<ParkingLotSetup/>} /> 
-       <Route path="/CanvasApi" element={<CanvasApi/>} /> 
+        <Route path="/ParkingLotSetup" element={<ParkingLotSetup />} />
+        <Route path="/CanvasApi" element={<CanvasApi />} />
+        <Route path="/CanvaApi" element={<CanvaAPI />} />
       </Routes>
     </>
   );
