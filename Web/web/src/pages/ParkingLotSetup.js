@@ -2,26 +2,46 @@ import React, { useEffect, useState } from "react";
 import "./ParkingLotSetup.css";
 
 const ParkingLotSetup = () => {
-  const [veri, setVeri] = useState([]);
+  const [veri, setVeri] = useState([
+    {
+      id: 1,
+      blok_adi: "A Blok",
+      park_alan_durum: {
+        spot1: true,
+        spot2: false,
+        spot3: true,
+        spot4: false,
+      },
+    },
+    {
+      id: 2,
+      blok_adi: "B Blok",
+      park_alan_durum: {
+        spot1: false,
+        spot2: false,
+        spot3: true,
+        spot4: true,
+      },
+    },
+  ]);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      fetchData();
-    }, 4000);
-
-    return () => clearInterval(timer);
+    // const timer = setInterval(() => {
+    //   fetchData();
+    // }, 4000);
+    // return () => clearInterval(timer);
   }, []);
 
-  const fetchData = async () => {
-    try {
-      const response = await fetch("http://192.168.35.217:8082/blok/getAll");
-      const data = await response.json();
-      setVeri(data);
-      console.log("Gelen Veri:", data);
-    } catch (error) {
-      console.error("Veri alınamadı: ", error);
-    }
-  };
+  // const fetchData = async () => {
+  //   try {
+  //     const response = await fetch("http://192.168.35.217:8082/blok/getAll");
+  //     const data = await response.json();
+  //     setVeri(data);
+  //     console.log("Gelen Veri:", data);
+  //   } catch (error) {
+  //     console.error("Veri alınamadı: ", error);
+  //   }
+  // };
 
   return (
     <div>
