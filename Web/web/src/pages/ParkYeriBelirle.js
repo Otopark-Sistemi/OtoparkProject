@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
-import backgroundImage from "../img/bg.jpeg"; // Background image
+import backgroundImage from "../img/bg2.jpeg"; // Background image
 
-const CanvaAPI = () => {
+const ParkYeriBelirle = () => {
   const canvasRef = useRef(null);
   const [canvasDimensions, setCanvasDimensions] = useState({
     width: 0,
@@ -150,7 +150,7 @@ const CanvaAPI = () => {
     setIsSending(true);
 
     try {
-      const response = await fetch("http://192.168.35.29:8082/area/create", {
+      const response = await fetch("http://192.168.35.167:8082/area/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -179,7 +179,7 @@ const CanvaAPI = () => {
   // Function to fetch parking areas from backend
   const fetchParkingAreas = async () => {
     try {
-      const response = await fetch("http://192.168.35.29:8082/area/getAll", {
+      const response = await fetch("http://192.168.35.167:8082/area/getAll", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -204,7 +204,7 @@ const CanvaAPI = () => {
   const deleteParkingArea = async (id) => {
     try {
       const response = await fetch(
-        `http://192.168.35.29:8082/area/delete/${id}`,
+        `http://192.168.35.167:8082/area/delete/${id}`,
         {
           method: "DELETE",
           headers: {
@@ -290,9 +290,9 @@ const CanvaAPI = () => {
   }, [points, parkingAreas]);
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gradient-to-r from-blue-400 to-purple-500">
+    <div className="flex items-center justify-center h-screen bg-white">
       <div
-        className="relative bg-cover bg-center w-4/5 h-4/5"
+        className="relative bg-contain bg-center w-4/5 h-4/5"
         style={{ backgroundImage: `url(${backgroundImage})` }}
       >
         <div className="absolute bottom-14 left-2 space-x-2">
@@ -375,5 +375,5 @@ const CanvaAPI = () => {
   );
 };
 
-export default CanvaAPI;
+export default ParkYeriBelirle;
 

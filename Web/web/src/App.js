@@ -1,50 +1,44 @@
 import React from "react";
-import { Routes, Route, Link, NavLink, useNavigate } from "react-router-dom";
-import Admin from "./pages/Admin";
-<<<<<<< HEAD
-import Login, { LoginPage } from "./pages/Login";
-import ParkingLotSetup  from "./pages/ParkingLotSetup";
+import { Routes, Route, Link, useNavigate } from "react-router-dom";
+import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
-import CanvasApi from "./pages/CanvasApi";
-import CanvaAPI from "./pages/CanvaAPI";
-
-
-=======
-import { LoginPage } from "./pages/LoginPage";
->>>>>>> b2fac7d5b989b834bd6b5b0e0566570181dbbfe9
+import HomePage from "./pages/HomePage";
+import ParkYeriBelirle from "./pages/ParkYeriBelirle";
+import Otoparkım from "./pages/Otoparkım";
 
 export default function App() {
   const navigate = useNavigate();
 
   // Giriş yapıldıktan sonra yönlendirme fonksiyonu
   const handleLoginSuccess = () => {
-<<<<<<< HEAD
-    navigate("/ParkingLotSetup");
-=======
-    navigate("/Admin");
->>>>>>> b2fac7d5b989b834bd6b5b0e0566570181dbbfe9
+    navigate("/home");
   };
 
   return (
-    <>
+    <div>
+      <div className="bg-transparent absolute border-b-[1px] border-transparent shadow-2xl w-full h-20 p-2">
+        <nav>
+          <ul className="justify-center items-center flex flex-row">
+            <li className="text-2xl p-2 ">
+              <Link to="/parkyeribelirle">Park Yeri Belirle</Link>
+            </li>
+            <li className="text-2xl p-2 ">
+              <Link to="/otoparkım">Otoparkım</Link>
+            </li>
+          </ul>
+        </nav>
+      </div>
       <Routes>
         <Route
           path="/"
-<<<<<<< HEAD
           element={<Login onLoginSuccess={handleLoginSuccess} />}
         />
-
-        <Route path="/SignUp" element={<SignUp />} />
-        <Route path="/Admin" element={<Admin />} />
-        <Route path="/ParkingLotSetup" element={<ParkingLotSetup />} />
-        <Route path="/CanvasApi" element={<CanvasApi />} />
-        <Route path="/CanvaApi" element={<CanvaAPI />} />
-=======
-          element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
-        />
-        <Route path="/Admin" element={<Admin />} />
->>>>>>> b2fac7d5b989b834bd6b5b0e0566570181dbbfe9
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/parkyeribelirle" element={<ParkYeriBelirle />} />
+        <Route path="/otoparkım" element={<Otoparkım />} />
+        <Route path="/home" element={<HomePage />} />
+        
       </Routes>
-    </>
+    </div>
   );
 }
