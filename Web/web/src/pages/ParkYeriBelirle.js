@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import backgroundImage from "../img/bg2.jpeg";
+import backgroundImage from "../img/bg.jpeg";
 
 const ParkYeriBelirle = () => {
   const canvasRef = useRef(null);
@@ -140,7 +140,7 @@ const ParkYeriBelirle = () => {
     setIsSending(true);
 
     try {
-      const response = await fetch("http://192.168.35.167:8082/area/create", {
+      const response = await fetch("http://192.168.1.91:8082/area/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -168,7 +168,7 @@ const ParkYeriBelirle = () => {
 
   const fetchParkingAreas = async () => {
     try {
-      const response = await fetch("http://192.168.35.167:8082/area/getAll", {
+      const response = await fetch("http://192.168.1.91:8082/area/getAll", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -192,7 +192,7 @@ const ParkYeriBelirle = () => {
   const deleteParkingArea = async (id) => {
     try {
       const response = await fetch(
-        `http://192.168.35.167:8082/area/delete/${id}`,
+        `http://192.168.1.91:8082/area/delete/${id}`,
         {
           method: "DELETE",
           headers: {
@@ -275,99 +275,105 @@ const ParkYeriBelirle = () => {
   }, [points, parkingAreas]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div
-        className="relative w-full max-w-4xl bg bg-cover bg-center mb-4"
-        style={{ backgroundImage: `url(${backgroundImage})` }}
-      >
-        <canvas
-          ref={canvasRef}
-          width={canvasDimensions.width}
-          height={canvasDimensions.height}
-          onClick={handleCanvasClick}
-          className="w-full h-full border rounded shadow-md"
-        ></canvas>
-        <div className="absolute bottom-4 left-4 space-x-2">
-          <button
-            onClick={handleUndo}
-            className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600"
-          >
-            Geri Al
-          </button>
-          <button
-            onClick={handleRedo}
-            className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600"
-          >
-            İleri Al
-          </button>
-        </div>
-      </div>
-      <div className="flex flex-col items-center w-full max-w-4xl bg-white p-4 rounded shadow-md">
-        <div className="flex flex-col w-full mb-4">
-          <input
-            type="text"
-            value={blockName}
-            onChange={handleBlockNameChange}
-            placeholder="Blok Adı"
-            className="px-4 py-2 mb-2 border rounded shadow"
-          />
-          <input
-            type="number"
-            value={parkNumber}
-            onChange={handleParkNumberChange}
-            placeholder="Park Numarası"
-            className="px-4 py-2 mb-2 border rounded shadow"
-          />
-          <button
-            onClick={handleAddToBlock}
-            disabled={points.length !== 4 || isSending}
-            className={`px-4 py-2 ${
-              points.length === 4 ? "bg-green-500" : "bg-gray-300"
-            } text-white rounded shadow hover:bg-green-600 disabled:opacity-50`}
-          >
-            {isSending ? "Gönderiliyor..." : "Bloğa Ekle"}
-          </button>
-        </div>
-        <div className="w-full overflow-y-auto">
-          {parkingAreas.map((area, index) => (
-            <div
-              key={index}
-              className="flex justify-between items-center mb-4 p-4 bg-gray-200 rounded shadow-md"
+    <div className="flex flex-col items-center h-screen justify-center  bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-4">
+     
+      <div className="flex flex-wrap gap-4 w-full h-screen overflow-y-auto">
+        
+        <div className="relative w-full bg-local h-[40rem] max-w-4xl bg-center mb-4" style={{ backgroundImage: `url(${backgroundImage})` }}>
+          <canvas
+            ref={canvasRef}
+            width={canvasDimensions.width}
+            height={canvasDimensions.height}
+            onClick={handleCanvasClick}
+            className="w-full h-full border rounded shadow-md"
+          ></canvas>
+          <div className="absolute bottom-4 left-4 space-x-2">
+            <button
+              onClick={handleUndo}
+              className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600"
             >
-              <div>
-                <h2 className="font-bold text-lg">{area.blockName} Blok</h2>
-                <p>
-                  {area.blockName} Blok: {area.parkNumber}. Park Yeri
-                </p>
-                <div className="text-sm text-gray-600">
-                  {area.coordinates.map((point, index) => (
-                    <div key={index}>
-                      Nokta {index + 1}: ({point.x.toFixed(2)},{" "}
-                      {point.y.toFixed(2)})
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <button
-                onClick={() =>
-                  handleDeleteParkingArea(area.blockName, area.parkNumber)
-                }
-                className="px-4 py-2 bg-red-500 text-white rounded shadow hover:bg-red-600"
-              >
-                Sil
-              </button>
+              Geri Al
+            </button>
+            <button
+              onClick={handleRedo}
+              className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600"
+            >
+              İleri Al
+            </button>
+          </div>
+            {points.length > 0 && (
+        <div className="w-full max-w-4xl mt-4 p-4 bg-white rounded shadow-md">
+          <h2 className="font-bold text-lg mb-2">Geçici Noktalar</h2>
+          {points.map((point, index) => (
+            <div key={index}>
+              Nokta {index + 1}: ({point.x.toFixed(2)}, {point.y.toFixed(2)})
             </div>
           ))}
         </div>
-      </div>
-      <div className="w-full max-w-4xl mt-4 p-4 bg-white rounded shadow-md">
-        <h2 className="font-bold text-lg mb-2">Geçici Noktalar</h2>
-        {points.map((point, index) => (
-          <div key={index}>
-            Nokta {index + 1}: ({point.x.toFixed(2)}, {point.y.toFixed(2)})
+      )}
+        </div>
+
+        <div className="flex flex-col h-[40rem] items-center w-full max-w-4xl bg-slate-500 p-4 rounded shadow-md">
+          <div className="flex flex-col w-full mb-4">
+            <input
+              type="text"
+              value={blockName}
+              onChange={handleBlockNameChange}
+              placeholder="Blok Adı"
+              className="px-4 py-2 mb-2 border rounded shadow"
+            />
+            <input
+              type="number"
+              value={parkNumber}
+              onChange={handleParkNumberChange}
+              placeholder="Park Numarası"
+              className="px-4 py-2 mb-2 border rounded shadow"
+            />
+            <button
+              onClick={handleAddToBlock}
+              disabled={points.length !== 4 || isSending}
+              className={`px-4 py-2 ${
+                points.length === 4 ? "bg-green-500" : "bg-gray-300"
+              } text-white rounded shadow hover:bg-green-600 disabled:opacity-50`}
+            >
+              {isSending ? "Gönderiliyor..." : "Bloğa Ekle"}
+            </button>
           </div>
-        ))}
+          <div className="w-full overflow-y-auto">
+            {parkingAreas.map((area, index) => (
+              <div
+                key={index}
+                className="flex justify-between items-center mb-4 p-4 bg-gray-200 rounded shadow-md"
+              >
+                <div>
+                  <h2 className="font-bold text-lg">{area.blockName} Blok</h2>
+                  <p>
+                    {area.blockName} Blok: {area.parkNumber}. Park Yeri
+                  </p>
+                  <div className="text-sm text-gray-600">
+                    {area.coordinates.map((point, index) => (
+                      <div key={index}>
+                        Nokta {index + 1}: ({point.x.toFixed(2)},{" "}
+                        {point.y.toFixed(2)})
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  onClick={() =>
+                    handleDeleteParkingArea(area.blockName, area.parkNumber)
+                  }
+                  className="px-4 py-2 bg-red-500 text-white rounded shadow hover:bg-red-600"
+                >
+                  Sil
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+        
       </div>
+    
     </div>
   );
 };

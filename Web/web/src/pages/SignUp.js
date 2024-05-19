@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import bg from "../img/bg-3.jpg";
 import "../App.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { ApıUrl } from "../components/ApıUrl"; // Adjust path as needed
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -36,16 +37,18 @@ const SignUp = () => {
           password: formData.password,
         };
 
-        const response = await fetch("http://192.168.1.72:8082/user/signup", {
+        const response = await fetch(ApıUrl.signup, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(newUser),
         });
+
         if (!response.ok) {
           throw new Error("Kayıt işlemi başarısız oldu.");
         }
+
         console.log("Kayıt Başarılı!");
         console.log("Gönderilen Veriler:", newUser);
         setError("");

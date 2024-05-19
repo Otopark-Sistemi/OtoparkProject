@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import bg from "../img/bg-3.jpg";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { ApıUrl } from "../components/ApıUrl";
 
 const Login = () => {
-  const url = "http://192.168.1.72:8082/user/login";
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -26,7 +26,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(url, {
+      const response = await fetch("http://192.168.1.91:8082/user/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

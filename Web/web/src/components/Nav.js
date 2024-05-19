@@ -1,13 +1,23 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { FaParking, FaHome } from "react-icons/fa";
-document.getElementById("nav-toggle").onclick = function () {
-  const navContent = document.getElementById("nav-content");
-  navContent.classList.toggle("hidden");
-};
+
 const Nav = () => {
+  useEffect(() => {
+    const navToggle = document.getElementById("nav-toggle");
+    const navContent = document.getElementById("nav-content");
+
+    if (navToggle) {
+      navToggle.onclick = function () {
+        if (navContent) {
+          navContent.classList.toggle("hidden");
+        }
+      };
+    }
+  }, []);
+
   return (
-    <nav className="bg-slate-600 text-white p-4 shadow-lg">
+    <nav className="bg-slate-600 text-white  p-4 shadow-lg">
       <div className="container mx-auto flex justify-between items-center">
         <div className="text-3xl font-bold">
           <NavLink to="/" className="flex items-center">
