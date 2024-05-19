@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import backgroundImage from "../img/bg2.jpeg"; // Background image
+import backgroundImage from "../img/bg2.jpeg";
 
 const ParkYeriBelirle = () => {
   const canvasRef = useRef(null);
@@ -23,7 +23,6 @@ const ParkYeriBelirle = () => {
     "128, 0, 128",
   ];
 
-  // Function to update canvas dimensions on window resize
   useEffect(() => {
     const updateCanvasDimensions = () => {
       const canvas = canvasRef.current;
@@ -41,7 +40,6 @@ const ParkYeriBelirle = () => {
     };
   }, []);
 
-  // Function to handle undo and redo using keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.ctrlKey && event.key === "z") {
@@ -58,7 +56,6 @@ const ParkYeriBelirle = () => {
     };
   }, [undoStack, redoStack, points]);
 
-  // Function to check if a point is inside a polygon
   const isPointInPolygon = (point, polygon) => {
     const { x, y } = point;
     let inside = false;
@@ -75,7 +72,6 @@ const ParkYeriBelirle = () => {
     return inside;
   };
 
-  // Function to add a point to the canvas
   const addPoint = (x, y) => {
     for (const area of parkingAreas) {
       if (isPointInPolygon({ x, y }, area.coordinates)) {
@@ -89,7 +85,6 @@ const ParkYeriBelirle = () => {
     setPoints([...points, { x, y }]);
   };
 
-  // Function to handle undo operation
   const handleUndo = () => {
     if (undoStack.length > 0) {
       const previousState = undoStack.pop();
@@ -98,7 +93,6 @@ const ParkYeriBelirle = () => {
     }
   };
 
-  // Function to handle redo operation
   const handleRedo = () => {
     if (redoStack.length > 0) {
       const nextState = redoStack.pop();
@@ -107,7 +101,6 @@ const ParkYeriBelirle = () => {
     }
   };
 
-  // Function to handle canvas click event
   const handleCanvasClick = (event) => {
     const rect = canvasRef.current.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -115,17 +108,14 @@ const ParkYeriBelirle = () => {
     addPoint(x, y);
   };
 
-  // Function to handle block name change
   const handleBlockNameChange = (event) => {
     setBlockName(event.target.value.toUpperCase());
   };
 
-  // Function to handle park number change
   const handleParkNumberChange = (event) => {
     setParkNumber(event.target.value);
   };
 
-  // Function to add points to a block
   const handleAddToBlock = async () => {
     if (!blockName || !parkNumber || points.length !== 4) {
       alert("Lütfen blok adı, park numarası ve 4 nokta belirleyin.");
@@ -176,7 +166,6 @@ const ParkYeriBelirle = () => {
     }
   };
 
-  // Function to fetch parking areas from backend
   const fetchParkingAreas = async () => {
     try {
       const response = await fetch("http://192.168.35.167:8082/area/getAll", {
@@ -193,14 +182,13 @@ const ParkYeriBelirle = () => {
       const data = await response.json();
       console.log("Alınan veri:", data);
 
-      setParkingAreas(data); // Backendden gelen veriyi state'e set et
+      setParkingAreas(data);
     } catch (error) {
       console.error("Veri alınırken hata oluştu:", error);
       alert("Veri alınırken hata oluştu.");
     }
   };
 
-  // Function to delete a parking area
   const deleteParkingArea = async (id) => {
     try {
       const response = await fetch(
@@ -220,14 +208,13 @@ const ParkYeriBelirle = () => {
       console.log("Veri başarıyla silindi:", id);
 
       const updatedParkingAreas = parkingAreas.filter((area) => area.id !== id);
-      setParkingAreas(updatedParkingAreas); // State'ten silinen park alanını kaldır
+      setParkingAreas(updatedParkingAreas);
     } catch (error) {
       console.error("Veri silinirken hata oluştu:", error);
       alert("Veri silinirken hata oluştu.");
     }
   };
 
-  // Function to handle delete parking area button click
   const handleDeleteParkingArea = (blockName, parkNumber) => {
     const areaToDelete = parkingAreas.find(
       (area) => area.blockName === blockName && area.parkNumber === parkNumber
@@ -241,12 +228,10 @@ const ParkYeriBelirle = () => {
     deleteParkingArea(areaToDelete.id);
   };
 
-  // UseEffect to fetch parking areas when component mounts
   useEffect(() => {
     fetchParkingAreas();
   }, []);
 
-  // UseEffect to draw on canvas when points or parkingAreas change
   useEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
@@ -257,7 +242,7 @@ const ParkYeriBelirle = () => {
       context.arc(point.x, point.y, 5, 0, 2 * Math.PI);
       context.fillStyle = "red";
       context.fill();
-      context.fillText(`${index + 1}. Nokta`, point.x + 5, point.y - 5); // Display point number
+      context.fillText(`${index + 1}. Nokta`, point.x + 5, point.y - 5);
     });
 
     if (points.length === 4) {
@@ -290,86 +275,98 @@ const ParkYeriBelirle = () => {
   }, [points, parkingAreas]);
 
   return (
-    <div className="flex items-center justify-center h-screen bg-white">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
       <div
-        className="relative bg-contain bg-center w-4/5 h-4/5"
+        className="relative w-full max-w-4xl bg bg-cover bg-center mb-4"
         style={{ backgroundImage: `url(${backgroundImage})` }}
       >
-        <div className="absolute bottom-14 left-2 space-x-2">
-          <button onClick={handleUndo} className="px-2 py-1 bg-blue-300">
-            Geri Al
-          </button>
-          <button onClick={handleRedo} className="px-2 py-1 bg-blue-300">
-            İleri Al
-          </button>
-        </div>
         <canvas
           ref={canvasRef}
           width={canvasDimensions.width}
           height={canvasDimensions.height}
           onClick={handleCanvasClick}
-          className="w-full h-full"
+          className="w-full h-full border rounded shadow-md"
         ></canvas>
-
-        <div className="absolute bottom-2 left-2 space-x-2">
+        <div className="absolute bottom-4 left-4 space-x-2">
+          <button
+            onClick={handleUndo}
+            className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600"
+          >
+            Geri Al
+          </button>
+          <button
+            onClick={handleRedo}
+            className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600"
+          >
+            İleri Al
+          </button>
+        </div>
+      </div>
+      <div className="flex flex-col items-center w-full max-w-4xl bg-white p-4 rounded shadow-md">
+        <div className="flex flex-col w-full mb-4">
           <input
             type="text"
             value={blockName}
             onChange={handleBlockNameChange}
             placeholder="Blok Adı"
-            className="px-2 py-1 border"
+            className="px-4 py-2 mb-2 border rounded shadow"
           />
           <input
             type="number"
             value={parkNumber}
             onChange={handleParkNumberChange}
             placeholder="Park Numarası"
-            className="px-2 py-1 border"
+            className="px-4 py-2 mb-2 border rounded shadow"
           />
           <button
             onClick={handleAddToBlock}
             disabled={points.length !== 4 || isSending}
-            className={`px-2 py-1 ${
-              points.length === 4 ? "bg-blue-500" : "bg-gray-300"
-            }`}
+            className={`px-4 py-2 ${
+              points.length === 4 ? "bg-green-500" : "bg-gray-300"
+            } text-white rounded shadow hover:bg-green-600 disabled:opacity-50`}
           >
             {isSending ? "Gönderiliyor..." : "Bloğa Ekle"}
           </button>
         </div>
-      </div>
-      <div className="flex flex-col mt-4">
-        {parkingAreas.map((area, index) => (
-          <div key={index} className="mb-4 p-2 bg-gray-100 rounded shadow-md">
-            <h2 className="font-bold mb-2">{area.blockName} Blok</h2>
-            <div className="mb-1">
-              {area.blockName} Blok: {area.parkNumber}. Park Yeri
-              <div className="text-sm text-gray-600">
-                {area.coordinates.map((point, index) => (
-                  <div key={index}>
-                    Nokta {index + 1}: ({point.x.toFixed(2)},{" "}
-                    {point.y.toFixed(2)})
-                  </div>
-                ))}
-              </div>
-            </div>
-            <button
-              onClick={() =>
-                handleDeleteParkingArea(area.blockName, area.parkNumber)
-              }
-              className="px-2 py-1 bg-red-500 text-white"
+        <div className="w-full overflow-y-auto">
+          {parkingAreas.map((area, index) => (
+            <div
+              key={index}
+              className="flex justify-between items-center mb-4 p-4 bg-gray-200 rounded shadow-md"
             >
-              Sil
-            </button>
-          </div>
-        ))}
-        <div className="mt-4 p-2 bg-white rounded shadow-md">
-          <h2 className="font-bold mb-2">Geçici Noktalar</h2>
-          {points.map((point, index) => (
-            <div key={index}>
-              Nokta {index + 1}: ({point.x.toFixed(2)}, {point.y.toFixed(2)})
+              <div>
+                <h2 className="font-bold text-lg">{area.blockName} Blok</h2>
+                <p>
+                  {area.blockName} Blok: {area.parkNumber}. Park Yeri
+                </p>
+                <div className="text-sm text-gray-600">
+                  {area.coordinates.map((point, index) => (
+                    <div key={index}>
+                      Nokta {index + 1}: ({point.x.toFixed(2)},{" "}
+                      {point.y.toFixed(2)})
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <button
+                onClick={() =>
+                  handleDeleteParkingArea(area.blockName, area.parkNumber)
+                }
+                className="px-4 py-2 bg-red-500 text-white rounded shadow hover:bg-red-600"
+              >
+                Sil
+              </button>
             </div>
           ))}
         </div>
+      </div>
+      <div className="w-full max-w-4xl mt-4 p-4 bg-white rounded shadow-md">
+        <h2 className="font-bold text-lg mb-2">Geçici Noktalar</h2>
+        {points.map((point, index) => (
+          <div key={index}>
+            Nokta {index + 1}: ({point.x.toFixed(2)}, {point.y.toFixed(2)})
+          </div>
+        ))}
       </div>
     </div>
   );

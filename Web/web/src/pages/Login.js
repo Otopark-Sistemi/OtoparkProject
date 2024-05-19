@@ -32,7 +32,9 @@ const Login = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
+        
       });
+
       if (!response.ok) {
         throw new Error("Giriş başarısız oldu. Lütfen tekrar deneyin.");
       }

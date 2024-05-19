@@ -1,43 +1,46 @@
-import React from "react";
-import { Routes, Route, Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Routes, Route, useNavigate, NavLink } from "react-router-dom";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import HomePage from "./pages/HomePage";
 import ParkYeriBelirle from "./pages/ParkYeriBelirle";
 import Otoparkım from "./pages/Otoparkım";
+import Nav from "./components/Nav";
 
 export default function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const navigate = useNavigate();
 
-  // Giriş yapıldıktan sonra yönlendirme fonksiyonu
+  useEffect(() => {
+    // Eğer kullanıcı login değilse, login sayfasına yönlendirin
+    if (!isLoggedIn) {
+      navigate("/");
+    }
+  }, [isLoggedIn, navigate]);
+
   const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
     navigate("/home");
   };
 
+
+
   return (
-    <div>
-      <div className="bg-transparent absolute border-b-[1px] border-transparent shadow-2xl w-full h-20 p-2">
-        <nav>
-          <ul className="justify-center items-center flex flex-row">
-            <li className="text-2xl p-2 ">
-              <Link to="/parkyeribelirle">Park Yeri Belirle</Link>
-            </li>
-            <li className="text-2xl p-2 ">
-              <Link to="/otoparkım">Otoparkım</Link>
-            </li>
-          </ul>
-        </nav>
-      </div>
+    <div className="h-screen w-full">
+      {isLoggedIn && <Nav />}
       <Routes>
         <Route
           path="/"
           element={<Login onLoginSuccess={handleLoginSuccess} />}
         />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/parkyeribelirle" element={<ParkYeriBelirle />} />
-        <Route path="/otoparkım" element={<Otoparkım />} />
-        <Route path="/home" element={<HomePage />} />
-        
+        {isLoggedIn && (
+          <>
+            <Route path="/parkyeribelirle" element={<ParkYeriBelirle />} />
+            <Route path="/otoparkım" element={<Otoparkım />} />
+            <Route path="/home" element={<HomePage />} />
+          </>
+        )}
       </Routes>
     </div>
   );

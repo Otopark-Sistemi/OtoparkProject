@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import "./ParkingLotSetup.css";
 
 const Otoparkım = () => {
   const [veri, setVeri] = useState([]);
@@ -16,36 +15,46 @@ const Otoparkım = () => {
       }
     };
 
-    // Fetch data initially
     fetchData();
 
     const timer = setInterval(fetchData, 4000);
 
-    // Cleanup interval to avoid memory leaks
     return () => clearInterval(timer);
   }, []);
 
   return (
-    <div>
-      <h1 className="text-3xl text-center font-bold text-white mb-4">
-        OTOPARK PANELİ
-      </h1>
-
-      <div className="parking-lot-container">
-        {veri.map((item) => (
-          <div key={item.id} className="block-container">
-            <h3 className="block-title">{item.blok_adi}</h3>
-            <div className="parking-lot">
-              {Object.values(item.park_alan_durum).map((status, index) => (
-                <div
-                  key={index}
-                  className={`parking-spot ${status ? "occupied" : "vacant"}`}
-                ></div>
-              ))}
+    <div className="min-h-screen bg-gray-900 text-white p-6">
+      <h1 className="text-4xl text-center font-bold mb-6">OTOPARK PANELİ</h1>
+      {veri.length === 0 ? (
+        <div className="flex justify-center items-center h-full">
+          <p className="text-2xl">
+            Henüz araç park alanı yok. Lütfen park alanı belirleyin.
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-6 justify-center">
+          {veri.map((item) => (
+            <div
+              key={item.id}
+              className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mx-auto"
+            >
+              <h3 className="text-2xl font-semibold mb-4 text-center">
+                {item.blok_adi}
+              </h3>
+              <div className="grid grid-cols-6 gap-2">
+                {Object.values(item.park_alan_durum).map((status, index) => (
+                  <div
+                    key={index}
+                    className={`w-12 h-12 rounded-md ${
+                      status ? "bg-red-500" : "bg-green-500"
+                    }`}
+                  ></div>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
