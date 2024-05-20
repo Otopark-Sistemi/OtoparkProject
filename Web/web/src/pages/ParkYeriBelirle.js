@@ -186,7 +186,6 @@ const ParkYeriBelirle = () => {
       setParkingAreas(data);
     } catch (error) {
       console.error("Veri alınırken hata oluştu:", error);
-      alert("Veri alınırken hata oluştu.");
     }
   };
 
@@ -348,14 +347,14 @@ const ParkYeriBelirle = () => {
           </div>
           <div className="w-full overflow-y-auto">
             {parkingAreas.length === 0 ? (
-              <div className="flex justify-center self-center p-10 ml-40  mx-auto items-center h-full">
+              <div className="flex flex-col justify-center self-center p-10  mx-auto items-center h-full">
                 <img
                   src={server}
                   alt="No parking areas illustration"
                   className="w-3/4 "
                 />
-                <p className="text-gray-500 text-lg mt-4">
-                  Eskiden Buralar Hep Dutluktu
+                <p className="text-slate-300 text-xl font-semibold mt-4">
+                  Eskiden Buralar Hep Dutluktu..
                 </p>
               </div>
             ) : (

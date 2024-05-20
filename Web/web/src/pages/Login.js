@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import bg from "../img/bg-3.jpg";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { ApıUrl } from "../components/ApıUrl";
+import { AuthContext } from "../auth/AuthProvider";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -10,11 +11,13 @@ const Login = () => {
     password: "",
   });
 
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const handleLoginSuccess = () => {
+    login();
     navigate("/home");
   };
 
@@ -26,13 +29,12 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://192.168.1.91:8082/user/login", {
+      const response = await fetch(ApıUrl.login, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
-        
       });
 
       if (!response.ok) {
