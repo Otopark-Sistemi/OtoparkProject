@@ -7,16 +7,7 @@ import Otoparkım from "./Otoparkım";
 const Admin = () => {
   return (
     <div>
-      <nav>
-        <ul>
-          <li>
-            <Link to="/admin/parkyeribelirle">Park Yeri Belirle</Link>
-          </li>
-          <li>
-            <Link to="/admin/otoparkim">Otopark</Link>
-          </li>
-        </ul>
-      </nav>
+      
       <Routes>
         <Route path="/admin/parkyeribelirle" element={<ParkYeriBelirle />} />
         <Route path="/admin/otoparkim" element={<Otoparkım />} />

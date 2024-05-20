@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import car from "../img/car.svg"; // Adjust the path as necessary
 
 const Otoparkım = () => {
   const [veri, setVeri] = useState([]);
@@ -6,7 +7,7 @@ const Otoparkım = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://192.168.1.91:8082/blok/getAll");
+        const response = await fetch("http://192.168.209.210:8082/blok/getAll");
         const data = await response.json();
         setVeri(data);
         console.log("Gelen Veri:", data);
@@ -26,13 +27,18 @@ const Otoparkım = () => {
     <div className="min-h-screen bg-gray-900 text-white p-6">
       <h1 className="text-4xl text-center font-bold mb-6">OTOPARK PANELİ</h1>
       {veri.length === 0 ? (
-        <div className="flex  justify-center items-center h-full">
-          <p className="text-2xl">
-            Henüz araç park alanı yok. Lütfen park alanı belirleyin.
+        <div className="flex flex-col mt-40 justify-center items-center h-full">
+          <img
+            src={car}
+            alt="No parking areas"
+            className="w-1/2 max-w-md mt-4"
+          />
+          <p className="text-2xl p-4">
+            ARAÇ BULUNAMADI
           </p>
         </div>
       ) : (
-        <div className=" gap-1 flex justify-center">
+        <div className="gap-1 flex justify-center">
           {veri.map((item) => (
             <div
               key={item.id}

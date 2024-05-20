@@ -1,6 +1,6 @@
 // apiUrls.js
 
-const API_BASE_URL = "http://192.168.1.91:8082"; // Replace with your API base URL
+const API_BASE_URL = "http://192.168.209.210:8082"; // Replace with your API base URL
 
 export const ApıUrl = {
   login: `${API_BASE_URL}/user/login`,

@@ -20,7 +20,7 @@ const Nav = () => {
     <nav className="bg-slate-600 text-white  p-4 shadow-lg">
       <div className="container mx-auto flex justify-between items-center">
         <div className="text-3xl font-bold">
-          <NavLink to="/" className="flex items-center">
+          <NavLink to="/home" className="flex items-center">
             <FaHome className="mr-2" /> Anasayfa
           </NavLink>
         </div>
