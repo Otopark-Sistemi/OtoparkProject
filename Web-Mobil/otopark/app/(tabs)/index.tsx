@@ -8,6 +8,7 @@ import {
   TextInput,
   FlatList,
 } from "react-native";
+import blocks from "../../constants/DataSet";
 
 import { ThemedView } from "@/components/ThemedView";
 import colors from "../../assets/colors/color";
@@ -23,10 +24,9 @@ export default function HomeScreen() {
   const [blocks, setBlocks] = useState([]);
 
   useEffect(() => {
-    // Backend'den veri çekme fonksiyonu
     const fetchBlocks = async () => {
       try {
-        const response = await fetch("http://192.168.1.81:8082/area/getAll"); // Backend API URL'sini buraya ekleyin
+        const response = await fetch("http://192.168.35.8:8082/area/getAll"); // Backend API URL'sini buraya ekleyin
         const data = await response.json();
         setBlocks(data);
       } catch (error) {
@@ -45,9 +45,10 @@ export default function HomeScreen() {
             alignItems: "center",
             justifyContent: "center",
             height: h * 2,
+            margin: "auto",
+            width: w * 9,
             position: "relative",
             backgroundColor: colors().color1,
-            margin: 10,
             borderRadius: 20,
             shadowColor: "black",
             shadowOffset: {
