@@ -141,7 +141,7 @@ const ParkYeriBelirle = () => {
     setIsSending(true);
 
     try {
-      const response = await fetch("http://192.168.209.210:8082/area/create", {
+      const response = await fetch("http://192.168.1.78:8082/area/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -389,7 +389,6 @@ const ParkYeriBelirle = () => {
               ))
             )}
           </div>
-        
         </div>
       </div>
     </div>
@@ -397,4 +396,3 @@ const ParkYeriBelirle = () => {
 };
 
 export default ParkYeriBelirle;
-

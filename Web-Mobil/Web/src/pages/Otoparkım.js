@@ -7,7 +7,7 @@ const Otoparkım = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://192.168.209.210:8082/blok/getAll");
+        const response = await fetch("http://192.168.1.78:8082/area/getAll");
         const data = await response.json();
         setVeri(data);
         console.log("Gelen Veri:", data);
@@ -33,9 +33,7 @@ const Otoparkım = () => {
             alt="No parking areas"
             className="w-1/2 max-w-md mt-4"
           />
-          <p className="text-2xl p-4">
-            ARAÇ BULUNAMADI
-          </p>
+          <p className="text-2xl p-4">ARAÇ BULUNAMADI</p>
         </div>
       ) : (
         <div className="gap-1 flex justify-center">
@@ -44,18 +42,22 @@ const Otoparkım = () => {
               key={item.id}
               className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mx-auto"
             >
-              <h3 className="text-2xl font-semibold mb-4 text-center">
-                {item.blok_adi}
+              <h3 className="text-2xl white font-semibold mb-4 text-center">
+                {item.blockName} Blok
               </h3>
               <div className="grid grid-cols-3 gap-2">
-                {Object.values(item.park_alan_durum).map((status, index) => (
-                  <div
-                    key={index}
-                    className={`w-24 h-24 rounded-md ${
-                      status ? "bg-red-500" : "bg-green-500"
-                    }`}
-                  ></div>
-                ))}
+                {Object.entries(item.park_alan_durum).map(
+                  ([spotId, isOccupied]) => (
+                    <div
+                      key={spotId}
+                      className={`w-24 h-24 rounded-md flex items-center justify-center ${
+                        isOccupied ? "bg-red-500" : "bg-green-500"
+                      }`}
+                    >
+                      <span className="text-2xl font-semibold">{spotId}</span>
+                    </div>
+                  )
+                )}
               </div>
             </div>
           ))}
