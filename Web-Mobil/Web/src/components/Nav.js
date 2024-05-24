@@ -1,17 +1,18 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { NavLink } from "react-router-dom";
-import { FaParking, FaHome } from "react-icons/fa";
+import { FaParking, FaHome, FaBars } from "react-icons/fa";
 import { AuthContext } from "../auth/AuthProvider";
 
 const Nav = () => {
   const { isAuthenticated } = useContext(AuthContext);
+  const [isMenuOpen, setIsMenuOpen] = useState(true);
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
 
   return (
-    <nav className="bg-slate-600 text-white p-4 shadow-lg">
+    <nav className="bg-slate-800 text-white p-4 shadow-lg">
       <div className="container mx-auto flex justify-between items-center">
         <div className="text-2xl font-semibold">
           <NavLink
@@ -21,7 +22,7 @@ const Nav = () => {
             <FaHome className="mr-2 text-xl" /> Anasayfa
           </NavLink>
         </div>
-        <div className="hidden md:flex space-x-4">
+        <div className="hidden md:flex space-x-6">
           <NavLink
             end
             to="/parkyeribelirle"
@@ -40,12 +41,15 @@ const Nav = () => {
           </NavLink>
         </div>
         <div className="md:hidden flex items-center">
-          <button id="nav-toggle" className="text-3xl">
-            &#9776;
+          <button onClick={toggleMenu} className="text-3xl focus:outline-none">
+            <FaBars />
           </button>
         </div>
       </div>
-      <div className="hidden md:hidden" id="nav-content">
+      <div
+        className={`md:hidden ${isMenuOpen ? "block" : "hidden"}`}
+        id="nav-content"
+      >
         <NavLink
           end
           to="/parkyeribelirle"

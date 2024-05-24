@@ -7,7 +7,8 @@ const Otoparkım = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://192.168.1.78:8082/area/getAll");
+        const response = await fetch("http://192.168.35.48:8082/area/getAll");
+
         const data = await response.json();
         setVeri(data);
         console.log("Gelen Veri:", data);

@@ -29,7 +29,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(ApıUrl.login, {
+      const response = await fetch("http://192.168.35.48:8082/user/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
