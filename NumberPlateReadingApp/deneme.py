@@ -43,7 +43,7 @@ def detect_plate(image, model_path):
                 cropped_image = image_array[y1:y2, x1:x2]
                 processed_image = preprocess_for_ocr(cropped_image)
                 # Tesseract OCR ayarlarını optimize edin
-                plate_text = pytesseract.image_to_string(processed_image, config='--psm 8 --oem 3 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+                plate_text = pytesseract.image_to_string(processed_image, config='--psm 6 --oem 3 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
                 print(f"Tespit edilen plaka metni: {plate_text.strip()}")
 
     else:
@@ -52,7 +52,7 @@ def detect_plate(image, model_path):
     return plate_text
 
 # Resim yolu
-image_path = 'models/test-image-11.jpg'
+image_path = 'models/test-image-12.jpg'
 model_path = 'models/plate_detection.pt'
 
 # Resmi yükle ve RGB'ye dönüştür
