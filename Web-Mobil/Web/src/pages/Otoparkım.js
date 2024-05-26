@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import car from "../img/car.svg"; // Adjust the path as necessary
-
+import {ApıUrl} from "../components/ApıUrl";
 const Otoparkım = () => {
   const [veri, setVeri] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://192.168.35.48:8082/area/getAll");
+        const response = await fetch(ApıUrl.get);
 
         const data = await response.json();
         setVeri(data);

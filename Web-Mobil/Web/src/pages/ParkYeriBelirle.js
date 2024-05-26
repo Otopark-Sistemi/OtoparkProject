@@ -1,22 +1,27 @@
-import React, { useRef, useEffect, useState } from "react";
-import backgroundImage from "../img/bg2.jpeg";
-import server from "../img/server.svg";
+import React, { useState, useEffect, useRef } from "react";
+import backgroundImage from "./../img/bg1.png"; // Ensure this path is correct
+import car from "../img/car.svg"
+import { ApıUrl } from "../components/ApıUrl";
+
 
 const ParkYeriBelirle = () => {
+
+  
+
   const canvasRef = useRef(null);
   const [canvasDimensions, setCanvasDimensions] = useState({
     width: 0,
     height: 0,
   });
-
-  
   const [points, setPoints] = useState([]);
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
   const [blockName, setBlockName] = useState("");
   const [parkNumber, setParkNumber] = useState("");
-  const [parkingAreas, setParkingAreas] = useState([]); // Initialize as an empty array
+  const [parkingAreas, setParkingAreas] = useState([]);
   const [isSending, setIsSending] = useState(false);
+
+  
 
   const colors = [
     "255, 0, 0",
@@ -60,38 +65,33 @@ const ParkYeriBelirle = () => {
   }, [undoStack, redoStack, points]);
 
   const isPointInPolygon = (point, polygon) => {
-    const { a, b } = point;
+    const { x, y } = point;
     let inside = false;
     for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-      const ai = polygon[i].a,
-        bi = polygon[i].b;
-      const aj = polygon[j].a,
-        bj = polygon[j].b;
+      const xi = polygon[i].x,
+        yi = polygon[i].y;
+      const xj = polygon[j].x,
+        yj = polygon[j].y;
 
       const intersect =
-        bi > b !== bj > b && a < ((aj - ai) * (b - bi)) / (bj - bi) + ai;
+        yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
       if (intersect) inside = !inside;
     }
     return inside;
   };
 
-const addPoint = (x, y) => {
-  for (const area of parkingAreas) {
-    if (
-      isPointInPolygon(
-        { x, y },
-        area.coordinatesList[Object.keys(area.coordinatesList)[0]]
-      )
-    ) {
-      alert("Bu nokta başka bir park alanının içinde.");
-      return;
+  const addPoint = (x, y) => {
+    for (const area of parkingAreas) {
+      if (isPointInPolygon({ x, y }, area.coordinates)) {
+        alert("Bu nokta başka bir park alanının içinde.");
+        return;
+      }
     }
-  }
 
-  setUndoStack([...undoStack, points]);
-  setRedoStack([]);
-  setPoints([...points, { x, y }]);
-};
+    setUndoStack([...undoStack, points]);
+    setRedoStack([]);
+    setPoints([...points, { x, y }]);
+  };
 
   const handleUndo = () => {
     if (undoStack.length > 0) {
@@ -111,9 +111,9 @@ const addPoint = (x, y) => {
 
   const handleCanvasClick = (event) => {
     const rect = canvasRef.current.getBoundingClientRect();
-    const a = event.clientX - rect.left;
-    const b = event.clientY - rect.top;
-    addPoint(a, b);
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    addPoint(x, y);
   };
 
   const handleBlockNameChange = (event) => {
@@ -124,7 +124,7 @@ const addPoint = (x, y) => {
     setParkNumber(event.target.value);
   };
 
- const handleAddToBlock = async () => {
+  const handleAddToBlock = async () => {
     if (!blockName || !parkNumber || points.length !== 4) {
       alert("Lütfen blok adı, park numarası ve 4 nokta belirleyin.");
       return;
@@ -146,38 +146,43 @@ const addPoint = (x, y) => {
     };
 
     setIsSending(true);
+ try {
+   const response = await fetch(ApıUrl.create, {
+     method: "POST",
+     headers: {
+       "Content-Type": "application/json",
+     },
+     body: JSON.stringify(newParkingArea),
+   });
 
-    try {
-      const response = await fetch("http://192.168.35.233:8082/area/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newParkingArea),
-      });
+   if (!response.ok) {
+     throw new Error("Veri gönderilemedi.");
+   }
 
-      if (!response.ok) {
-        throw new Error("Veri gönderilemedi.");
-      }
+   const createdParkingArea = await response.json(); // Parse response JSON
 
-      console.log("Veri başarıyla gönderildi:", newParkingArea);
+   console.log("Veri başarıyla gönderildi:", createdParkingArea);
 
-      setParkingAreas([...parkingAreas, newParkingArea]);
-      setPoints([]);
-      setBlockName("");
-      setParkNumber("");
-    } catch (error) {
-      console.error("Veri gönderilirken hata oluştu:", error);
-      alert("Veri gönderilirken hata oluştu.");
-    } finally {
-      setIsSending(false);
-    }
+   // Update parkingAreas state with the newly created area
+setParkingAreas((prevParkingAreas) => {
+  // Yeni park yeri eklerken önceden varolan park yerlerini temizle
+  const newParkingAreas = [createdParkingArea];
+  return newParkingAreas;
+});
+   setPoints([]);
+   setBlockName("");
+   setParkNumber("");
+ } catch (error) {
+   console.error("Veri gönderilirken hata oluştu:", error);
+   alert("Veri gönderilirken hata oluştu.");
+ } finally {
+   setIsSending(false);
+ }
   };
-
 
   const fetchParkingAreas = async () => {
     try {
-      const response = await fetch("http://192.168.35.233:8082/area/getAll", {
+      const response = await fetch(ApıUrl.get, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -194,35 +199,45 @@ const addPoint = (x, y) => {
       setParkingAreas(data);
     } catch (error) {
       console.error("Veri alınırken hata oluştu:", error);
-      alert("Veri alınırken hata oluştu.");
     }
   };
 
-  const deleteParkingArea = async (id) => {
-    try {
-      const response = await fetch(
-        `http://192.168.35.84:8082/area/delete/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Veri silinemedi.");
+const deleteParkingArea = async (blockName, number) => {
+  try {
+    const response = await fetch(
+      `http://192.168.35.48:8082/area/delete/${blockName}/${number}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
+    );
 
-      console.log("Veri başarıyla silindi:", id);
-
-      const updatedParkingAreas = parkingAreas.filter((area) => area.id !== id);
-      setParkingAreas(updatedParkingAreas);
-    } catch (error) {
-      console.error("Veri silinirken hata oluştu:", error);
-      alert("Veri silinirken hata oluştu.");
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `HTTP error! Status: ${response.status}, Text: ${errorText}`
+      );
     }
-  };
+
+    console.log("Veri başarıyla silindi:", blockName, number);
+
+    // Update parkingAreas state after deletion
+    setParkingAreas((prevParkingAreas) =>
+      prevParkingAreas.filter(
+        (area) =>
+          area.blockName !== blockName ||
+          Object.keys(area.coordinatesList).every((key) => key !== number)
+      )
+    );
+    fetchParkingAreas()
+  } catch (error) {
+    console.error("Veri silinirken hata oluştu:", error);
+    alert(`Veri silinirken hata oluştu: ${error.message}`);
+  }
+};
+
 
   const handleDeleteParkingArea = (blockName, parkNumber) => {
     const areaToDelete = parkingAreas.find(
@@ -245,139 +260,163 @@ const addPoint = (x, y) => {
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
     context.clearRect(0, 0, canvas.width, canvas.height);
-points.forEach((point, index) => {
-  context.beginPath();
-  context.arc(point.x, point.y, 5, 0, 2 * Math.PI);
-  context.fillStyle = "red";
-  context.fill();
-  context.fillText(`${index + 1}. Nokta`, point.x + 5, point.y - 5);
-});
 
-if (points.length === 4) {
-  const color = colors[parkingAreas.length % colors.length];
-  context.beginPath();
-  context.moveTo(points[0].x, points[0].y);
-  context.lineTo(points[1].x, points[1].y);
-  context.lineTo(points[2].x, points[2].y);
-  context.lineTo(points[3].x, points[3].y);
-  context.closePath();
-  context.strokeStyle = `rgba(${color}, 1)`;
-  context.fillStyle = `rgba(${color}, 0.5)`;
-  context.fill();
-  context.stroke();
-}
-
-    parkingAreas.forEach((area) => {
-      const color = colors[parkingAreas.indexOf(area) % colors.length];
-      const coordinates =
-        area.coordinatesList[Object.keys(area.coordinatesList)[0]];
-
+    // Draw points
+    points.forEach((point, index) => {
       context.beginPath();
-      context.moveTo(coordinates[0].x, coordinates[0].y);
-      context.lineTo(coordinates[1].x, coordinates[1].y);
-      context.lineTo(coordinates[2].x, coordinates[2].y);
-      context.lineTo(coordinates[3].x, coordinates[3].y);
-      context.closePath();
-      context.strokeStyle = `rgba(${color}, 1)`;
-      context.fillStyle = `rgba(${color}, 0.5)`;
+      context.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+      context.fillStyle = "red";
       context.fill();
-      context.stroke();
-      context.fillStyle = "black";
-      context.fillText(
-        `Blok: ${area.blockName} Park No: ${area.parkNumber}`,
-        coordinates[0].x + 10,
-        coordinates[0].y + 10
-      );
     });
-  }, [points, canvasDimensions, parkingAreas]);
+
+    // Draw existing parking areas
+    parkingAreas.forEach((area, index) => {
+      const color = colors[index % colors.length];
+      const coordinatesList = area.coordinatesList;
+
+      if (coordinatesList) {
+        Object.entries(coordinatesList).forEach(([parkNumber, coordinates]) => {
+          context.beginPath();
+          context.moveTo(coordinates[0].x, coordinates[0].y);
+          context.lineTo(coordinates[1].x, coordinates[1].y);
+          context.lineTo(coordinates[2].x, coordinates[2].y);
+          context.lineTo(coordinates[3].x, coordinates[3].y);
+          context.closePath();
+          
+          context.strokeStyle = `rgba(${color}, 1)`;
+          context.fillStyle = `rgba(${color}, 0.5)`;
+          context.fill();
+          context.stroke();
+
+          // Draw block name and park number
+          const centerX = (coordinates[0].x + coordinates[2].x) / 2;
+          const centerY = (coordinates[0].y + coordinates[2].y) / 2;
+          context.fillStyle = "black";
+          context.textAlign = "center";
+          context.font = "12px Arial";
+          context.fillText(
+            `${area.blockName} - ${parkNumber}`,
+            centerX,
+            centerY
+          );
+        });
+      }
+    });
+  }, [points, parkingAreas]); // Redraw whenever points or parkingAreas change
 
   return (
-    <div
-      className="flex flex-col items-center justify-center min-h-screen bg-cover bg-center relative"
-      style={{
-        backgroundImage: `url(${backgroundImage})`,
-      }}
-    >
-      <div className="absolute top-0 left-0 m-4 p-4 bg-white bg-opacity-50 rounded-md shadow-lg">
-        <img src={server} alt="Server" className="h-16 w-auto" />
-      </div>
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-white">Park Yeri Belirleme</h1>
-      </div>
-      <div className="relative w-full max-w-4xl h-96 bg-white bg-opacity-75 shadow-lg rounded-lg p-4">
-        <canvas
-          ref={canvasRef}
-          width={canvasDimensions.width}
-          height={canvasDimensions.height}
-          onClick={handleCanvasClick}
-          className="border border-gray-300"
-        />
-        <div className="flex mt-4 justify-between">
-          <div>
+    <div className="flex flex-col bg-gray-900  items-center  h-screen justify-center p-6">
+      <h1 className="text-4xl text-center text-white font-bold mb-6">
+        PARK ALANLARI
+      </h1>
+
+      <div className="flex flex-wrap gap-4 w-full h-screen overflow-y-auto">
+        <div
+          className="relative w-full h-[31.5rem] bg-contain bg-no-repeat bg-center max-w-4xl  mb-4"
+          style={{ backgroundImage: `url(${backgroundImage})` }}
+        >
+          <canvas
+            ref={canvasRef}
+            width={canvasDimensions.width}
+            height={canvasDimensions.height}
+            onClick={handleCanvasClick}
+            className="w-full h-full border rounded shadow-md"
+          ></canvas>
+          <div className="absolute bottom-4 left-4 space-x-2">
+            <button
+              onClick={handleUndo}
+              className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600"
+            >
+              Geri Al
+            </button>
+            <button
+              onClick={handleRedo}
+              className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600"
+            >
+              İleri Al
+            </button>
+          </div>
+          {points.length > 0 && (
+            <div className="w-full max-w-4xl mt-4 p-4 bg-white rounded shadow-md">
+              <h2 className="font-bold text-lg mb-2">Geçici Noktalar</h2>
+              {points.map((point, index) => (
+                <div key={index}>
+                  Nokta {index + 1}: ({point.x.toFixed(2)}, {point.y.toFixed(2)}
+                  )
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col h-[40rem] items-center w-full max-w-4xl bg-slate-500 p-4 rounded shadow-md">
+          <div className="flex flex-col w-full mb-4">
             <input
               type="text"
-              placeholder="Blok Adı"
               value={blockName}
               onChange={handleBlockNameChange}
-              className="mr-2 px-4 py-2 border border-gray-400 rounded-lg"
+              placeholder="Blok Adı"
+              className="px-4 py-2 mb-2 border rounded shadow"
             />
             <input
-              type="text"
-              placeholder="Park Numarası"
+              type="number"
               value={parkNumber}
               onChange={handleParkNumberChange}
-              className="mr-2 px-4 py-2 border border-gray-400 rounded-lg"
+              placeholder="Park Numarası"
+              className="px-4 py-2 mb-2 border rounded shadow"
             />
             <button
               onClick={handleAddToBlock}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg"
-              disabled={isSending}
+              disabled={points.length !== 4 || isSending}
+              className={`px-4 py-2 ${
+                points.length === 4 ? "bg-green-500" : "bg-gray-300"
+              } text-white rounded shadow hover:bg-green-600 disabled:opacity-50`}
             >
-              Park Alanı Ekle
+              {isSending ? "Gönderiliyor..." : "Bloğa Ekle"}
             </button>
           </div>
-          <button
-            onClick={handleUndo}
-            className="px-4 py-2 bg-gray-500 text-white rounded-lg mr-2"
-          >
-            Geri Al
-          </button>
-          <button
-            onClick={handleRedo}
-            className="px-4 py-2 bg-gray-500 text-white rounded-lg"
-          >
-            Yinele
-          </button>
+          <div className="w-full overflow-y-auto">
+            {parkingAreas.length === 0 ? (
+              <div className="flex flex-col justify-center self-center p-10 mx-auto items-center h-full">
+                <img
+                  src={car}
+                  alt="No parking areas illustration"
+                  className="w-1/4"
+                />
+                <p className="text-slate-300 text-xl font-semibold mt-4">
+                  Eskiden Buralar Hep Dutluktu..
+                </p>
+              </div>
+            ) : (
+              parkingAreas.flatMap((area) => {
+                const coordinatesList = area.coordinatesList;
+                const parkNumbers = coordinatesList
+                  ? Object.keys(coordinatesList)
+                  : [];
+               return parkNumbers.map((parkNumber) => (
+                 <div
+                   key={`${area.id}-${parkNumber}`}
+                   className="flex justify-between items-center py-2 px-4 border-b border-gray-200"
+                 >
+                   <div>
+                     <span className="font-semibold">
+                       {area.blockName} - {parkNumber}
+                     </span>
+                   </div>
+                   <button
+                     className="text-red-500 hover:text-red-700 focus:outline-none"
+                     onClick={() =>
+                       deleteParkingArea(area.blockName, parkNumber)
+                     }
+                   >
+                     Sil
+                   </button>
+                 </div>
+               ));
+              })
+            )}
+          </div>
         </div>
-      </div>
-      <div className="w-full max-w-4xl mt-8 bg-white bg-opacity-75 shadow-lg rounded-lg p-4">
-        <h2 className="text-2xl font-bold mb-4">Park Alanları</h2>
-        <ul>
-          {parkingAreas.length > 0 &&
-            parkingAreas.map((area) => (
-              <li
-                key={area.id}
-                className="flex justify-between items-center mb-2"
-              >
-                <span>
-                  Blok: {area.blockName}, Park Numarası:{" "}
-                  {Object.keys(area.coordinatesList)[0]}
-                </span>
-                <button
-                  onClick={() =>
-                    handleDeleteParkingArea(
-                      area.blockName,
-                      Object.keys(area.coordinatesList)[0]
-                    )
-                  }
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg"
-                >
-                  Sil
-                </button>
-              </li>
-            ))}
-          {parkingAreas.length === 0 && <li>Henüz park alanı eklenmedi.</li>}
-        </ul>
       </div>
     </div>
   );

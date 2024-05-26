@@ -1,309 +1,399 @@
-import React, { useState, useEffect } from "react";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
-import { Bar, Pie } from "react-chartjs-2";
-import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
+import React, { useRef, useEffect, useState } from "react";
+import backgroundImage from "../img/bg2.jpeg";
+import server from "../img/server.svg";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend
-);
+const ParkYeriBelirle = () => {
+  const canvasRef = useRef(null);
+  const [canvasDimensions, setCanvasDimensions] = useState({
+    width: 0,
+    height: 0,
+  });
+  const [points, setPoints] = useState([]);
+  const [undoStack, setUndoStack] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
+  const [blockName, setBlockName] = useState("");
+  const [parkNumber, setParkNumber] = useState("");
+  const [parkingAreas, setParkingAreas] = useState([]);
+  const [isSending, setIsSending] = useState(false);
 
-const Dashboard = () => {
-  // Genel bilgiler için state
-  const [totalCars, setTotalCars] = useState(100);
-  const [emptySpots, setEmptySpots] = useState(20);
-  const [occupiedSpots, setOccupiedSpots] = useState(80);
-  const [dailyEntries, setDailyEntries] = useState(50);
-  const [dailyExits, setDailyExits] = useState(45);
-
-  // Loading state
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Static data for demonstration
-  const staticData = [
-    {
-      id: 1,
-      parkNumber: 1,
-      blockNumber: "A",
-      giris: "2024-05-24 08:00:00",
-      cikis: "2024-05-24 12:00:00",
-      totalCost: 20,
-    },
-    {
-      id: 2,
-      parkNumber: 2,
-      blockNumber: "A",
-      giris: "2024-05-24 09:00:00",
-      cikis: "2024-05-24 11:00:00",
-      totalCost: 15,
-    },
-    {
-      id: 3,
-      parkNumber: 3,
-      blockNumber: "B",
-      giris: "2024-05-24 07:30:00",
-      cikis: "2024-05-24 13:30:00",
-      totalCost: 25,
-    },
-    {
-      id: 4,
-      parkNumber: 4,
-      blockNumber: "B",
-      giris: "2024-05-24 10:00:00",
-      cikis: "2024-05-24 14:00:00",
-      totalCost: 30,
-    },
-    {
-      id: 5,
-      parkNumber: 5,
-      blockNumber: "C",
-      giris: "2024-05-24 11:00:00",
-      cikis: "2024-05-24 15:00:00",
-      totalCost: 20,
-    },
+  const colors = [
+    "255, 0, 0",
+    "0, 255, 0",
+    "0, 0, 255",
+    "255, 165, 0",
+    "128, 0, 128",
   ];
 
-  // Grafik verisi
-  const barData = {
-    labels: ["Pzt", "Sal", "Çar", "Per", "Cum", "Cts", "Paz"],
-    datasets: [
-      {
-        label: "Günlük Girişler",
-        data: [12, 19, 3, 5, 2, 3, 7],
-        backgroundColor: "rgba(75, 192, 192, 0.6)",
-      },
-      {
-        label: "Günlük Çıkışlar",
-        data: [2, 3, 20, 5, 1, 4, 2],
-        backgroundColor: "rgba(153, 102, 255, 0.6)",
-      },
-    ],
-  };
-
-  const pieData = {
-    labels: ["Dolu", "Boş"],
-    datasets: [
-      {
-        data: [occupiedSpots, emptySpots],
-        backgroundColor: ["rgba(255, 99, 132, 0.6)", "rgba(54, 162, 235, 0.6)"],
-      },
-    ],
-  };
-
-  const options = {
-    maintainAspectRatio: false,
-  };
-
-  // Canlı veri akışı için state ve effect
-  const [logs, setLogs] = useState([
-    {
-      timestamp: "2024-05-20 10:00:00",
-      message: "34 ABC 123 plakalı araç giriş yaptı.",
-      highlighted: false,
-    },
-    {
-      timestamp: "2024-05-20 10:05:00",
-      message: "34 XYZ 789 plakalı araç çıkış yaptı.",
-      highlighted: false,
-    },
-  ]);
-
   useEffect(() => {
-    setIsLoading(true); // Start loading
-    const interval = setInterval(() => {
-      const newLog = {
-        timestamp: new Date().toISOString(),
-        message: "Yeni araç giriş yaptı.",
-        highlighted: true,
-      };
-      setLogs((prevLogs) => {
-        const updatedLogs = [...prevLogs, newLog];
-        return updatedLogs.slice(-10); // Limit logs to last 10 entries
-      });
+    const updateCanvasDimensions = () => {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const { clientWidth, clientHeight } = canvas.parentNode;
+        setCanvasDimensions({ width: clientWidth, height: clientHeight });
+      }
+    };
 
-      setTimeout(() => {
-        setLogs((prevLogs) =>
-          prevLogs.map((log, index) =>
-            index === prevLogs.length - 1 ? { ...log, highlighted: false } : log
-          )
-        );
-      }, 15000);
-      setIsLoading(false); // End loading
-    }, 3000);
+    window.addEventListener("resize", updateCanvasDimensions);
+    updateCanvasDimensions();
 
-    return () => clearInterval(interval);
+    return () => {
+      window.removeEventListener("resize", updateCanvasDimensions);
+    };
   }, []);
 
-  // Filtreleme için state ve handler
-  const [filter, setFilter] = useState("all");
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.ctrlKey && event.key === "z") {
+        handleUndo();
+      } else if (event.ctrlKey && event.key === "y") {
+        handleRedo();
+      }
+    };
 
-  const handleFilterChange = (e) => {
-    setFilter(e.target.value);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [undoStack, redoStack, points]);
+
+  const isPointInPolygon = (point, polygon) => {
+    const { x, y } = point;
+    let inside = false;
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      const xi = polygon[i].x,
+        yi = polygon[i].y;
+      const xj = polygon[j].x,
+        yj = polygon[j].y;
+
+      const intersect =
+        yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+      if (intersect) inside = !inside;
+    }
+    return inside;
   };
 
-  // Logout handler
-  const handleLogout = () => {
-    // Oturum bilgilerini temizle
-    localStorage.removeItem("userToken");
-    // Oturum kapatma işlemi sonrası yönlendirme (örneğin, giriş sayfasına)
-    window.location.href = "/";
+  const addPoint = (x, y) => {
+    for (const area of parkingAreas) {
+      if (isPointInPolygon({ x, y }, area.coordinates)) {
+        alert("Bu nokta başka bir park alanının içinde.");
+        return;
+      }
+    }
+
+    setUndoStack([...undoStack, points]);
+    setRedoStack([]);
+    setPoints([...points, { x, y }]);
   };
+
+  const handleUndo = () => {
+    if (undoStack.length > 0) {
+      const previousState = undoStack.pop();
+      setRedoStack([...redoStack, points]);
+      setPoints(previousState);
+    }
+  };
+
+  const handleRedo = () => {
+    if (redoStack.length > 0) {
+      const nextState = redoStack.pop();
+      setUndoStack([...undoStack, points]);
+      setPoints(nextState);
+    }
+  };
+
+  const handleCanvasClick = (event) => {
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    addPoint(x, y);
+  };
+
+  const handleBlockNameChange = (event) => {
+    setBlockName(event.target.value.toUpperCase());
+  };
+
+  const handleParkNumberChange = (event) => {
+    setParkNumber(event.target.value);
+  };
+
+  const handleAddToBlock = async () => {
+    if (!blockName || !parkNumber || points.length !== 4) {
+      alert("Lütfen blok adı, park numarası ve 4 nokta belirleyin.");
+      return;
+    }
+
+    const existingParkArea = parkingAreas.find(
+      (area) => area.blockName === blockName && area.parkNumber === parkNumber
+    );
+
+    if (existingParkArea) {
+      alert(`Blok ${blockName} için park numarası ${parkNumber} zaten mevcut.`);
+      return;
+    }
+
+    const newParkingArea = {
+      blockName,
+      parkNumber,
+      coordinates: points,
+    };
+
+    setIsSending(true);
+
+    try {
+      const response = await fetch("http://172.20.10.6:8082/area/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newParkingArea),
+      });
+
+      if (!response.ok) {
+        throw new Error("Veri gönderilemedi.");
+      }
+
+      console.log("Veri başarıyla gönderildi:", newParkingArea);
+
+      setParkingAreas([...parkingAreas, newParkingArea]);
+      setPoints([]);
+      setBlockName("");
+      setParkNumber("");
+    } catch (error) {
+      console.error("Veri gönderilirken hata oluştu:", error);
+      alert("Veri gönderilirken hata oluştu.");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const fetchParkingAreas = async () => {
+    try {
+      const response = await fetch("http://172.20.10.6:8082/area/getAll", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Veri alınamadı.");
+      }
+
+      const data = await response.json();
+      console.log("Alınan veri:", data);
+
+      setParkingAreas(data);
+    } catch (error) {
+      console.error("Veri alınırken hata oluştu:", error);
+      alert("Veri alınırken hata oluştu.");
+    }
+  };
+
+  const deleteParkingArea = async (id) => {
+    try {
+      const response = await fetch(
+        `http://172.20.10.6:8082/area/delete/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Veri silinemedi.");
+      }
+
+      console.log("Veri başarıyla silindi:", id);
+
+      const updatedParkingAreas = parkingAreas.filter((area) => area.id !== id);
+      setParkingAreas(updatedParkingAreas);
+    } catch (error) {
+      console.error("Veri silinirken hata oluştu:", error);
+      alert("Veri silinirken hata oluştu.");
+    }
+  };
+
+  const handleDeleteParkingArea = (blockName, parkNumber) => {
+    const areaToDelete = parkingAreas.find(
+      (area) => area.blockName === blockName && area.parkNumber === parkNumber
+    );
+
+    if (!areaToDelete) {
+      alert("Silinecek park alanı bulunamadı.");
+      return;
+    }
+
+    deleteParkingArea(areaToDelete.id);
+  };
+
+  useEffect(() => {
+    fetchParkingAreas();
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    points.forEach((point, index) => {
+      context.beginPath();
+      context.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+      context.fillStyle = "red";
+      context.fill();
+      context.fillText(`${index + 1}. Nokta`, point.x + 5, point.y - 5);
+    });
+
+    if (points.length === 4) {
+      const color = colors[parkingAreas.length % colors.length];
+      context.beginPath();
+      context.moveTo(points[0].x, points[0].y);
+      context.lineTo(points[1].x, points[1].y);
+      context.lineTo(points[2].x, points[2].y);
+      context.lineTo(points[3].x, points[3].y);
+      context.closePath();
+      context.strokeStyle = `rgba(${color}, 1)`;
+      context.fillStyle = `rgba(${color}, 0.5)`;
+      context.fill();
+      context.stroke();
+    }
+
+    parkingAreas.forEach((area, index) => {
+      const color = colors[index % colors.length];
+      context.beginPath();
+      context.moveTo(area.coordinates[0].x, area.coordinates[0].y);
+      context.lineTo(area.coordinates[1].x, area.coordinates[1].y);
+      context.lineTo(area.coordinates[2].x, area.coordinates[2].y);
+      context.lineTo(area.coordinates[3].x, area.coordinates[3].y);
+      context.closePath();
+      context.strokeStyle = `rgba(${color}, 1)`;
+      context.fillStyle = `rgba(${color}, 0.5)`;
+      context.fill();
+      context.stroke();
+    });
+  }, [points, parkingAreas]);
 
   return (
-    <div className="p-6">
-      {isLoading && (
-        <div className="flex items-center justify-center  h-screen">
-          <SkeletonTheme color="black" highlightColor="red">
-            <div className="p-6">
-              <Skeleton height={40} width={200} />
-              <Skeleton height={240} style={{ marginTop: "10rem" }} />
-              <Skeleton height={240} style={{ marginTop: "10rem" }} />
-              <Skeleton height={240} style={{ marginTop: "10rem" }} />
-              <Skeleton height={240} style={{ marginTop: "10rem" }} />
-              <Skeleton height={160} style={{ marginTop: "10rem" }} />
-            </div>
-          </SkeletonTheme>
-        </div>
-      )}
+    <div className="flex flex-col bg-gray-900  items-center  h-screen justify-center p-6">
+      <h1 className="text-4xl text-center text-white font-bold mb-6">
+        PARK ALANLARI
+      </h1>
 
-      {!isLoading && (
-        <>
-          {/* Filtreleme */}
-          <div className="mb-6">
-            <label htmlFor="filter" className="mr-4">
-              Filtre:
-            </label>
-            <select
-              id="filter"
-              value={filter}
-              onChange={handleFilterChange}
-              className="p-2 border rounded-lg"
-            >
-              <option value="all">Hepsi</option>
-              <option value="today">Bugün</option>
-              <option value="week">Bu Hafta</option>
-              <option value="month">Bu Ay</option>
-            </select>
-          </div>
-
-          {/* Logout Butonu */}
-          <div className="flex justify-end mb-6">
+      <div className="flex flex-wrap gap-4 w-full h-screen overflow-y-auto">
+        <div
+          className="relative w-full h-[31.5rem] bg-contain bg-no-repeat bg-center max-w-4xl  mb-4"
+          style={{ backgroundImage: `url(${backgroundImage})` }}
+        >
+          <canvas
+            ref={canvasRef}
+            width={canvasDimensions.width}
+            height={canvasDimensions.height}
+            onClick={handleCanvasClick}
+            className="w-full h-full border rounded shadow-md"
+          ></canvas>
+          <div className="absolute bottom-4 left-4 space-x-2">
             <button
-              onClick={handleLogout}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-600"
+              onClick={handleUndo}
+              className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600"
             >
-              Çıkış Yap
+              Geri Al
+            </button>
+            <button
+              onClick={handleRedo}
+              className="px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600"
+            >
+              İleri Al
             </button>
           </div>
-
-          {/* Genel Bilgiler */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
-            <div className="bg-white p-4 rounded-lg shadow-md">
-              <h2 className="text-xl font-bold">Toplam Araç</h2>
-              <p className="text-2xl">{totalCars}</p>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-md">
-              <h2 className="text-xl font-bold">Boş Park Yeri</h2>
-              <p className="text-2xl">{emptySpots}</p>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-md">
-              <h2 className="text-xl font-bold">Dolu Park Yeri</h2>
-              <p className="text-2xl">{occupiedSpots}</p>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-md">
-              <h2 className="text-xl font-bold">Günlük Giriş/Çıkış</h2>
-              <p className="text-2xl">
-                {dailyEntries}/{dailyExits}
-              </p>
-            </div>
-          </div>
-
-          {/* Grafikler */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-white p-4 rounded-lg shadow-md">
-              <h2  className="text-xl font-bold mb-4">
-                  Haftalık Giriş/Çıkış Grafiği
-                </h2>
-                <div className="h-64">
-                  <Bar data={barData} options={options} />
+          {points.length > 0 && (
+            <div className="w-full max-w-4xl mt-4 p-4 bg-white rounded shadow-md">
+              <h2 className="font-bold text-lg mb-2">Geçici Noktalar</h2>
+              {points.map((point, index) => (
+                <div key={index}>
+                  Nokta {index + 1}: ({point.x.toFixed(2)}, {point.y.toFixed(2)}
+                  )
                 </div>
-              </div>
-              <div className="bg-white p-4 rounded-lg shadow-md">
-                <h2 className="text-xl font-bold mb-4">Doluluk Oranı</h2>
-                <div className="h-64">
-                  <Pie data={pieData} options={options} />
-                </div>
-              </div>
-          </div>
-
-          {/* Canlı Veri Akışı */}
-          <h2 className="text-2xl font-bold mb-4">Canlı Veri Akışı</h2>
-          <div className="p-4 rounded-lg shadow-md mx-auto bg-slate-300 justify-center items-center h-64 overflow-y-auto mb-6">
-            <ul className="bg-slate-50">
-              {logs.map((log, index) => (
-                <li
-                  key={index}
-                  className={`border-b-2 p-2 mb-2 ${
-                    log.highlighted ? "bg-green-200" : ""
-                  }`}
-                >
-                  <span className="bg-slate-400 p-1 font-bold font-italic">
-                    {log.timestamp}
-                  </span>{" "}
-                  -{" "}
-                  <span className="p-1 font-semibold font-italic">
-                    {log.message}
-                  </span>
-                </li>
               ))}
-            </ul>
-          </div>
+            </div>
+          )}
+        </div>
 
-          {/* Ücretlendirme Tablosu */}
-          <div className="mb-6">
-            <h2 className="text-xl font-bold mb-4">Ücretlendirme Bilgileri</h2>
-            <table className="min-w-full bg-white shadow-md rounded-lg">
-              <thead>
-                <tr>
-                  <th className="py-2 px-4 border-b-2">Park Number</th>
-                  <th className="py-2 px-4 border-b-2">Block Number</th>
-                  <th className="py-2 px-4 border-b-2">Giriş</th>
-                  <th className="py-2 px-4 border-b-2">Çıkış</th>
-                  <th className="py-2 px-4 border-b-2">Total Cost</th>
-                </tr>
-              </thead>
-              <tbody>
-                {staticData.map((data) => (
-                  <tr key={data.id}>
-                    <td className="py-2 px-4 border-b">{data.parkNumber}</td>
-                    <td className="py-2 px-4 border-b">{data.blockNumber}</td>
-                    <td className="py-2 px-4 border-b">{data.giris}</td>
-                    <td className="py-2 px-4 border-b">{data.cikis}</td>
-                    <td className="py-2 px-4 border-b">{data.totalCost} ₺</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className="flex flex-col h-[40rem] items-center w-full max-w-4xl bg-slate-500 p-4 rounded shadow-md">
+          <div className="flex flex-col w-full mb-4">
+            <input
+              type="text"
+              value={blockName}
+              onChange={handleBlockNameChange}
+              placeholder="Blok Adı"
+              className="px-4 py-2 mb-2 border rounded shadow"
+            />
+            <input
+              type="number"
+              value={parkNumber}
+              onChange={handleParkNumberChange}
+              placeholder="Park Numarası"
+              className="px-4 py-2 mb-2 border rounded shadow"
+            />
+            <button
+              onClick={handleAddToBlock}
+              disabled={points.length !== 4 || isSending}
+              className={`px-4 py-2 ${
+                points.length === 4 ? "bg-green-500" : "bg-gray-300"
+              } text-white rounded shadow hover:bg-green-600 disabled:opacity-50`}
+            >
+              {isSending ? "Gönderiliyor..." : "Bloğa Ekle"}
+            </button>
           </div>
-        </>
-      )}
+          <div className="w-full overflow-y-auto">
+            {parkingAreas.length === 0 ? (
+              <div className="flex justify-center self-center p-10 ml-40  mx-auto items-center h-full">
+                <img
+                  src={server}
+                  alt="No parking areas illustration"
+                  className="w-3/4 "
+                />
+                <p className="text-gray-500 text-lg mt-4">
+                  Eskiden Buralar Hep Dutluktu
+                </p>
+              </div>
+            ) : (
+              parkingAreas.map((area, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center mb-4 p-4 bg-gray-200 rounded shadow-md"
+                >
+                  <div>
+                    <h2 className="font-bold text-lg">{area.blockName} Blok</h2>
+                    <p>
+                      {area.blockName} Blok: {area.parkNumber}. Park Yeri
+                    </p>
+                    <div className="text-sm hidden text-gray-600">
+                      {area.coordinates.map((point, index) => (
+                        <div key={index}>
+                          Nokta {index + 1}: ({point.x.toFixed(2)},{" "}
+                          {point.y.toFixed(2)})
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() =>
+                      handleDeleteParkingArea(area.blockName, area.parkNumber)
+                    }
+                    className="px-4 py-2 bg-red-500 text-white rounded shadow hover:bg-red-600"
+                  >
+                    Sil
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default Dashboard;
-
+export default ParkYeriBelirle;
