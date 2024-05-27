@@ -13,6 +13,7 @@ const Nav = () => {
 
   return (
     <nav className="bg-slate-800 text-white p-4 shadow-lg">
+    
       <div className="container mx-auto flex justify-between items-center">
         <div className="text-2xl font-semibold">
           <NavLink
@@ -46,6 +47,7 @@ const Nav = () => {
           </button>
         </div>
       </div>
+
       <div
         className={`md:hidden ${isMenuOpen ? "block" : "hidden"}`}
         id="nav-content"

@@ -205,7 +205,7 @@ setParkingAreas((prevParkingAreas) => {
 const deleteParkingArea = async (blockName, number) => {
   try {
     const response = await fetch(
-      `http://192.168.35.48:8082/area/delete/${blockName}/${number}`,
+      `http://172.20.10.6:8082/area/delete/${blockName}/${number}`,
       {
         method: "POST",
         headers: {
