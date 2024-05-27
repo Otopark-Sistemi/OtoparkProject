@@ -37,7 +37,7 @@ const SignUp = () => {
           password: formData.password,
         };
 
-        const response = await fetch("http://192.168.35.8:8082/user/signup", {
+        const response = await fetch(ApıUrl.signup, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

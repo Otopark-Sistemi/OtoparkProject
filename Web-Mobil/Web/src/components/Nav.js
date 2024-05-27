@@ -5,15 +5,18 @@ import { AuthContext } from "../auth/AuthProvider";
 
 const Nav = () => {
   const { isAuthenticated } = useContext(AuthContext);
-  const [isMenuOpen, setIsMenuOpen] = useState(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // Initially, menu is closed
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
   return (
-    <nav className="bg-slate-800 text-white p-4 shadow-lg">
-    
+    <nav
+      className={`bg-slate-800 text-white p-4 shadow-lg ${
+        isAuthenticated ? "block" : "hidden"
+      }`}
+    >
       <div className="container mx-auto flex justify-between items-center">
         <div className="text-2xl font-semibold">
           <NavLink
