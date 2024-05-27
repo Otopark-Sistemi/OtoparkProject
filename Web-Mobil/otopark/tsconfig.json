@@ -13,5 +13,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ]
+, "app/(tabs)/SplashScreen.js", "app/(tabs)/App.js", "app/(tabs)/Home.js"  ]
 }

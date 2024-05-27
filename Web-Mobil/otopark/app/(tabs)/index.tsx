@@ -7,6 +7,7 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  Keyboard,
 } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import colors from "../../assets/colors/color";
@@ -26,7 +27,7 @@ export default function HomeScreen() {
     const fetchBlocks = async () => {
       setLoading(true);
       try {
-        const response = await fetch("http://192.168.35.48:8082/area/getAll"); // Backend API URL
+        const response = await fetch("http://172.20.10.6:8082/area/getAll"); // Backend API URL
         const data = await response.json();
         setBlocksData(data);
       } catch (error) {
@@ -47,13 +48,14 @@ export default function HomeScreen() {
 
   const handleSearch = async () => {
     if (plaka.trim() === "") {
+      Keyboard.dismiss();
       setSearchData(null);
       return;
     }
 
     setLoading(true);
     try {
-      const response = await fetch(`http://192.168.35.48:8082/search/${plaka}`); // Backend API endpoint
+      const response = await fetch(`http://172.20.10.6:8082/search/${plaka}`); // Backend API endpoint
       const data = await response.json();
 
       if (data && data.blockName && data.plaka && data.parkNumber) {
