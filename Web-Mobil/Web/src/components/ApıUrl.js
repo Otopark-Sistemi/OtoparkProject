@@ -7,6 +7,7 @@ export const ApıUrl = {
   create: `${API_BASE_URL}/area/create`,
   get: `${API_BASE_URL}/area/getAll`,
   delete: `${API_BASE_URL}/area/delete`,
+  statistic: `${API_BASE_URL}/statistic/getAll`,
 
 
   // Add more endpoints as needed

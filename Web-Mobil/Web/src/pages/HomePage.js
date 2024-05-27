@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Bar, Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,7 +10,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { Bar, Pie } from "react-chartjs-2";
+import { ApıUrl } from "../components/ApıUrl";
 
 ChartJS.register(
   CategoryScale,
@@ -22,25 +23,114 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
-  // Genel bilgiler için state
-  const [totalCars, setTotalCars] = useState(100);
-  const [emptySpots, setEmptySpots] = useState(20);
-  const [occupiedSpots, setOccupiedSpots] = useState(80);
-  const [dailyEntries, setDailyEntries] = useState(50);
-  const [dailyExits, setDailyExits] = useState(45);
+  const [totalCars, setTotalCars] = useState(0);
+  const [emptySpots, setEmptySpots] = useState(0);
+  const [occupiedSpots, setOccupiedSpots] = useState(0);
+  const [dailyEntries, setDailyEntries] = useState(0);
+  const [dailyExits, setDailyExits] = useState(0);
+  const [totalCost, setTotalCost] = useState(0);
 
-  // Grafik verisi
+  const [weeklyEntries, setWeeklyEntries] = useState([]);
+  const [weeklyExits, setWeeklyExits] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(ApıUrl.get);
+        const data = await response.json();
+
+        let occupiedCount = 0;
+        let emptyCount = 0;
+
+        data.forEach((item) => {
+          const parkStatus = item.park_alan_durum;
+
+          Object.values(parkStatus).forEach((status) => {
+            if (status) {
+              occupiedCount++;
+            } else {
+              emptyCount++;
+            }
+          });
+        });
+
+        setOccupiedSpots(occupiedCount);
+        setEmptySpots(emptyCount);
+        setTotalCars(occupiedCount + emptyCount);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchEntryExitData = async () => {
+      try {
+        const response = await fetch(ApıUrl.statistic);
+        const data = await response.json();
+
+        const today = new Date().toISOString().slice(0, 10);
+
+        let entryCount = 0;
+        let exitCount = 0;
+
+        data.forEach((entry) => {
+          const entryDate = entry.girisSaati.slice(0, 10);
+          const exitDate = entry.cikisSaati
+            ? entry.cikisSaati.slice(0, 10)
+            : null;
+
+          if (entryDate === today) {
+            entryCount++;
+          }
+
+          if (exitDate === today) {
+            exitCount++;
+          }
+        });
+
+        setDailyEntries(entryCount);
+        setDailyExits(exitCount);
+
+        const weeklyEntriesCount = new Array(7).fill(0);
+        const weeklyExitsCount = new Array(7).fill(0);
+
+        data.forEach((entry) => {
+          const entryDate = new Date(entry.girisSaati);
+          const exitDate = entry.cikisSaati ? new Date(entry.cikisSaati) : null;
+
+          const dayOfWeek = entryDate.getDay();
+          weeklyEntriesCount[dayOfWeek]++;
+
+          if (exitDate) {
+            const exitDayOfWeek = exitDate.getDay();
+            weeklyExitsCount[exitDayOfWeek]++;
+          }
+        });
+
+        setWeeklyEntries(weeklyEntriesCount);
+        setWeeklyExits(weeklyExitsCount);
+      } catch (error) {
+        console.error("Error fetching entry/exit data:", error);
+      }
+    };
+
+    fetchEntryExitData();
+  }, []);
+
   const barData = {
     labels: ["Pzt", "Sal", "Çar", "Per", "Cum", "Cts", "Paz"],
     datasets: [
       {
         label: "Günlük Girişler",
-        data: [12, 19, 3, 5, 2, 3, 7],
+        data: weeklyEntries,
         backgroundColor: "rgba(75, 192, 192, 0.6)",
       },
       {
         label: "Günlük Çıkışlar",
-        data: [2, 3, 20, 5, 1, 4, 2],
+        data: weeklyExits,
         backgroundColor: "rgba(153, 102, 255, 0.6)",
       },
     ],
@@ -56,11 +146,28 @@ const Dashboard = () => {
     ],
   };
 
-  const options = {
-    maintainAspectRatio: false,
+  const costData = {
+    labels: ["Toplam Ücret"],
+    datasets: [
+      {
+        label: "Toplam Ücret",
+        data: [totalCost],
+        backgroundColor: "rgba(255, 206, 86, 0.6)",
+      },
+    ],
   };
 
-  // Canlı veri akışı için state ve effect
+  const options = {
+    scales: {
+      y: {
+        beginAtZero: true,
+        suggestedMin: 0,
+        suggestedMax: totalCars,
+        stepSize: 1,
+      },
+    },
+  };
+
   const [logs, setLogs] = useState([
     {
       timestamp: "2024-05-20 10:00:00",
@@ -68,40 +175,23 @@ const Dashboard = () => {
     },
     {
       timestamp: "2024-05-20 10:05:00",
-      message: "34 XYZ 789 plakalı araç çıkış yaptı.",
+      message: "34 XYZ 789 plakalı araç çıkış yaptı. Ödenen Ücret: 50 TL",
     },
   ]);
 
-  /*
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetch('/api/live-data')
-        .then(response => response.json())
-        .then(data => setLogs(prevLogs => [...prevLogs, ...data]));
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-  */
-
-  // Filtreleme için state ve handler
   const [filter, setFilter] = useState("all");
 
   const handleFilterChange = (e) => {
     setFilter(e.target.value);
   };
 
-  // Logout handler
   const handleLogout = () => {
-    // Oturum bilgilerini temizle
     localStorage.removeItem("userToken");
-    // Oturum kapatma işlemi sonrası yönlendirme (örneğin, giriş sayfasına)
     window.location.href = "/";
   };
 
   return (
     <div className="p-6">
-      {/* Logout Butonu */}
       <div className="flex justify-end mb-6">
         <button
           onClick={handleLogout}
@@ -111,10 +201,9 @@ const Dashboard = () => {
         </button>
       </div>
 
-      {/* Genel Bilgiler */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow-md">
-          <h2 className="text-xl font-bold">Toplam Araç</h2>
+          <h2 className="text-xl font-bold">Toplam Araç Kapasitesi</h2>
           <p className="text-2xl">{totalCars}</p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-md">
@@ -133,7 +222,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Grafikler */}
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow-md">
           <h2 className="text-xl font-bold mb-4">
@@ -148,40 +236,47 @@ const Dashboard = () => {
           <div className="h-64">
             <Pie data={pieData} options={options} />
           </div>
+
+          <div className="bg-white p-4 rounded-lg shadow-md">
+            <h2 className="text-xl font-bold mb-4">Toplam Ücret</h2>
+            <div className="h-64">
+              <Bar data={costData} options={options} />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Canlı Veri Akışı */}
-      <div className="bg-white p-4 rounded-lg shadow-md h-64 overflow-y-auto mb-6">
-        <h2 className="text-xl font-bold mb-4">Canlı Veri Akışı</h2>
-        <ul>
+      <div className="mt-6 hidden">
+        <h2 className="text-xl font-bold mb-4 hidden">Log Kayıtları</h2>
+        <div className="flex justify-end mb-4">
+          <select
+            value={filter}
+            onChange={handleFilterChange}
+            className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          >
+            <option value="all">Tüm Kayıtlar</option>
+            <option value="entry">Giriş Kayıtları</option>
+            <option value="exit">Çıkış Kayıtları</option>
+          </select>
+        </div>
+        <ul className="divide-y divide-gray-200">
           {logs.map((log, index) => (
-            <li key={index} className="mb-2">
-              {log.timestamp} - {log.message}
+            <li className="py-4 flex">
+              <div className="flex items-center justify-between space-x-4">
+                <div className="flex-1 truncate">
+                  <div className="text-sm font-medium text-gray-900 truncate">
+                    {log.message}
+                  </div>
+                  <div className="text-sm text-gray-500">{log.timestamp}</div>
+                </div>
+              </div>
             </li>
           ))}
         </ul>
-      </div>
-
-      {/* Filtreleme */}
-      <div className="mb-6">
-        <label htmlFor="filter" className="mr-4">
-          Filtre:
-        </label>
-        <select
-          id="filter"
-          value={filter}
-          onChange={handleFilterChange}
-          className="p-2 border rounded-lg"
-        >
-          <option value="all">Hepsi</option>
-          <option value="today">Bugün</option>
-          <option value="week">Bu Hafta</option>
-          <option value="month">Bu Ay</option>
-        </select>
       </div>
     </div>
   );
 };
 
 export default Dashboard;
+

@@ -109,12 +109,17 @@ const ParkYeriBelirle = () => {
     }
   };
 
-  const handleCanvasClick = (event) => {
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    addPoint(x, y);
-  };
+const handleCanvasClick = (event) => {
+  if (points.length === 4) {
+    return;
+  }
+
+  const rect = canvasRef.current.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  addPoint(x, y);
+};
+
 
   const handleBlockNameChange = (event) => {
     setBlockName(event.target.value.toUpperCase());
@@ -154,10 +159,8 @@ const ParkYeriBelirle = () => {
      },
      body: JSON.stringify(newParkingArea),
    });
+   fetchParkingAreas()
 
-   if (!response.ok) {
-     throw new Error("Veri gönderilemedi.");
-   }
 
    const createdParkingArea = await response.json(); // Parse response JSON
 
@@ -365,13 +368,13 @@ const deleteParkingArea = async (blockName, number) => {
               placeholder="Park Numarası"
               className="px-4 py-2 mb-2 border rounded shadow"
             />
-            <button
-              onClick={handleAddToBlock}
-              disabled={points.length !== 4 || isSending}
-              className={`px-4 py-2 ${
-                points.length === 4 ? "bg-green-500" : "bg-gray-300"
-              } text-white rounded shadow hover:bg-green-600 disabled:opacity-50`}
-            >
+          <button
+  onClick={handleAddToBlock}
+  disabled={points.length !== 4 || isSending}
+  className={`px-4 py-2 rounded shadow-md text-white hover:bg-green-600 ${points.length === 4 ? 'bg-green-500' : 'bg-gray-300'} ${points.length !== 4 ? 'disabled:opacity-50 cursor-not-allowed' : ''}`}
+>
+ 
+
               {isSending ? "Gönderiliyor..." : "Bloğa Ekle"}
             </button>
           </div>
@@ -399,12 +402,12 @@ const deleteParkingArea = async (blockName, number) => {
                    className="flex justify-between items-center py-2 px-4 border-b border-gray-200"
                  >
                    <div>
-                     <span className="font-semibold">
-                       {area.blockName} - {parkNumber}
+                     <span className="font-semibold bg-orange-300 hover:bg-orange-400  px-6 py-3 rounded-2xl ">
+                       {area.blockName} BLOK / {parkNumber}. PARK YERİ
                      </span>
                    </div>
                    <button
-                     className="text-red-500 hover:text-red-700 focus:outline-none"
+                     className="text-red-500 bg-white px-6 rounded-2xl py-2 hover:text-red-700 hover:bg-orange-300 transition-all cursor-pointer border-orange-300 focus:outline-none "
                      onClick={() =>
                        deleteParkingArea(area.blockName, parkNumber)
                      }
