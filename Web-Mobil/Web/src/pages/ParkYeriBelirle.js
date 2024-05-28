@@ -1,13 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import backgroundImage from "./../img/bg1.png"; // Ensure this path is correct
-import car from "../img/car.svg"
+import car from "../img/car.svg";
 import { ApıUrl } from "../components/ApıUrl";
 
-
 const ParkYeriBelirle = () => {
-
-  
-
   const canvasRef = useRef(null);
   const [canvasDimensions, setCanvasDimensions] = useState({
     width: 0,
@@ -20,8 +16,6 @@ const ParkYeriBelirle = () => {
   const [parkNumber, setParkNumber] = useState("");
   const [parkingAreas, setParkingAreas] = useState([]);
   const [isSending, setIsSending] = useState(false);
-
-  
 
   const colors = [
     "255, 0, 0",
@@ -63,34 +57,94 @@ const ParkYeriBelirle = () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [undoStack, redoStack, points]);
-
   const isPointInPolygon = (point, polygon) => {
     const { x, y } = point;
     let inside = false;
-    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-      const xi = polygon[i].x,
-        yi = polygon[i].y;
-      const xj = polygon[j].x,
-        yj = polygon[j].y;
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; i++) {
+      const xi = polygon[i].x;
+      const yi = polygon[i].y;
+      const xj = polygon[j].x;
+      const yj = polygon[j].y;
 
       const intersect =
-        yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+        yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi - yi) + xi;
       if (intersect) inside = !inside;
+      j = i;
     }
     return inside;
   };
 
+  const isPolygonOverlap = (poly1, poly2) => {
+    for (let i = 0; i < poly1.length; i++) {
+      if (isPointInPolygon(poly1[i], poly2)) return true;
+    }
+    for (let i = 0; i < poly2.length; i++) {
+      if (isPointInPolygon(poly2[i], poly1)) return true;
+    }
+    return false;
+  };
+
   const addPoint = (x, y) => {
+    const newPoint = { x, y };
+
+    // Check if the new point is inside any existing parking area
     for (const area of parkingAreas) {
-      if (isPointInPolygon({ x, y }, area.coordinates)) {
-        alert("Bu nokta başka bir park alanının içinde.");
+      if (
+        area.blockName === blockName &&
+        isPointInPolygon(newPoint, area.coordinatesList)
+      ) {
+        alert("Bu nokta bu park alanının sınırları içinde.");
         return;
+      }
+    }
+
+    // Combine new points with current points
+    const newPoints = [...points, newPoint];
+
+    // If the new points form a polygon, check for overlap with existing areas
+    if (newPoints.length === 4) {
+      for (const area of parkingAreas) {
+        if (isPolygonOverlap(newPoints, area.coordinates)) {
+          alert("Bu noktalar başka bir park alanının üstünde.");
+          return;
+        }
       }
     }
 
     setUndoStack([...undoStack, points]);
     setRedoStack([]);
-    setPoints([...points, { x, y }]);
+    setPoints(newPoints);
+    
+  };
+
+  const addParkingArea = (blockName) => {
+    // Check if the current points form a valid polygon
+    if (points.length !== 4) {
+      alert("Lütfen 4 nokta seçin.");
+      return;
+    }
+
+    // Check if the new area overlaps with existing areas
+    for (const area of parkingAreas) {
+      if (isPolygonOverlap(points, area.coordinates)) {
+        alert("Bu alan başka bir park alanının üstünde veya içinde.");
+        return;
+      }
+    }
+
+    const newArea = {
+      blockName,
+      coordinates: points,
+      parkNumber: "1", // Example: Park number
+    };
+
+    // Add new area to the list
+    setParkingAreas([...parkingAreas, newArea]);
+
+    // Clear points after adding the area
+    setPoints([]);
+    setUndoStack([]);
+    setRedoStack([]);
   };
 
   const handleUndo = () => {
@@ -109,17 +163,16 @@ const ParkYeriBelirle = () => {
     }
   };
 
-const handleCanvasClick = (event) => {
-  if (points.length === 4) {
-    return;
-  }
+  const handleCanvasClick = (event) => {
+    if (points.length === 4) {
+      return;
+    }
 
-  const rect = canvasRef.current.getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
-  addPoint(x, y);
-};
-
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    addPoint(x, y);
+  };
 
   const handleBlockNameChange = (event) => {
     setBlockName(event.target.value.toUpperCase());
@@ -144,6 +197,18 @@ const handleCanvasClick = (event) => {
       return;
     }
 
+    // Check if the new area overlaps with existing areas
+    for (const area of parkingAreas) {
+      if (isPolygonOverlap(points, area.coordinates)) {
+        alert("Bu alan başka bir park alanının üstünde veya içinde.");
+        return;
+      }
+    }
+      setPoints([]);
+      setUndoStack([]);
+      setRedoStack([]);
+    
+
     const newParkingArea = {
       blockName,
       parkNumber,
@@ -151,36 +216,35 @@ const handleCanvasClick = (event) => {
     };
 
     setIsSending(true);
- try {
-   const response = await fetch(ApıUrl.create, {
-     method: "POST",
-     headers: {
-       "Content-Type": "application/json",
-     },
-     body: JSON.stringify(newParkingArea),
-   });
-   fetchParkingAreas()
+    try {
+      const response = await fetch(ApıUrl.create, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newParkingArea),
+      });
+      fetchParkingAreas();
 
+      const createdParkingArea = await response.json(); // Parse response JSON
 
-   const createdParkingArea = await response.json(); // Parse response JSON
+      console.log("Veri başarıyla gönderildi:", createdParkingArea);
+      // Update parkingAreas state with the newly created area
+      setParkingAreas((prevParkingAreas) => [
+        ...prevParkingAreas,
+        createdParkingArea,
+      ]);
 
-   console.log("Veri başarıyla gönderildi:", createdParkingArea);
+      // Clear points after successfully adding the area
+    
 
-   // Update parkingAreas state with the newly created area
-setParkingAreas((prevParkingAreas) => {
-  // Yeni park yeri eklerken önceden varolan park yerlerini temizle
-  const newParkingAreas = [createdParkingArea];
-  return newParkingAreas;
-});
-   setPoints([]);
-   setBlockName("");
-   setParkNumber("");
- } catch (error) {
-   console.error("Veri gönderilirken hata oluştu:", error);
-   alert("Veri gönderilirken hata oluştu.");
- } finally {
-   setIsSending(false);
- }
+      // Refresh parking areas
+      fetchParkingAreas();
+    } catch (error) {
+      console.error("Veri gönderilirken hata oluştu:", error);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const fetchParkingAreas = async () => {
@@ -205,55 +269,41 @@ setParkingAreas((prevParkingAreas) => {
     }
   };
 
-const deleteParkingArea = async (blockName, number) => {
-  try {
-    const response = await fetch(
-      `http://172.20.10.6:8082/area/delete/${blockName}/${number}`,
-      {
+  const deleteParkingArea = async (blockName, number) => {
+    try {
+      const response = await fetch(`${ApıUrl.delete}/${blockName}/${number}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP error! Status: ${response.status}, Text: ${errorText}`
+        );
       }
-    );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `HTTP error! Status: ${response.status}, Text: ${errorText}`
+      console.log("Veri başarıyla silindi:", blockName, number);
+
+      // Update parkingAreas state after deletion
+      setParkingAreas((prevParkingAreas) =>
+        prevParkingAreas.filter(
+          (area) =>
+            area.blockName !== blockName ||
+            Object.keys(area.coordinatesList).every((key) => key !== number)
+        )
       );
+
+    window.location.reload();
+    } catch (error) {
+      console.error("Veri silinirken hata oluştu:", error);
+      alert(`Veri silinirken hata oluştu: ${error.message}`);
     }
-
-    console.log("Veri başarıyla silindi:", blockName, number);
-
-    // Update parkingAreas state after deletion
-    setParkingAreas((prevParkingAreas) =>
-      prevParkingAreas.filter(
-        (area) =>
-          area.blockName !== blockName ||
-          Object.keys(area.coordinatesList).every((key) => key !== number)
-      )
-    );
-    fetchParkingAreas()
-  } catch (error) {
-    console.error("Veri silinirken hata oluştu:", error);
-    alert(`Veri silinirken hata oluştu: ${error.message}`);
-  }
-};
-
-
-  const handleDeleteParkingArea = (blockName, parkNumber) => {
-    const areaToDelete = parkingAreas.find(
-      (area) => area.blockName === blockName && area.parkNumber === parkNumber
-    );
-
-    if (!areaToDelete) {
-      alert("Silinecek park alanı bulunamadı.");
-      return;
-    }
-
-    deleteParkingArea(areaToDelete.id);
   };
+
+
 
   useEffect(() => {
     fetchParkingAreas();
@@ -285,7 +335,7 @@ const deleteParkingArea = async (blockName, number) => {
           context.lineTo(coordinates[2].x, coordinates[2].y);
           context.lineTo(coordinates[3].x, coordinates[3].y);
           context.closePath();
-          
+
           context.strokeStyle = `rgba(${color}, 1)`;
           context.fillStyle = `rgba(${color}, 0.5)`;
           context.fill();
@@ -339,17 +389,7 @@ const deleteParkingArea = async (blockName, number) => {
               İleri Al
             </button>
           </div>
-          {points.length > 0 && (
-            <div className="w-full max-w-4xl mt-4 p-4 bg-white rounded shadow-md">
-              <h2 className="font-bold text-lg mb-2">Geçici Noktalar</h2>
-              {points.map((point, index) => (
-                <div key={index}>
-                  Nokta {index + 1}: ({point.x.toFixed(2)}, {point.y.toFixed(2)}
-                  )
-                </div>
-              ))}
-            </div>
-          )}
+       
         </div>
 
         <div className="flex flex-col h-[40rem] items-center w-full max-w-4xl bg-slate-500 p-4 rounded shadow-md">
@@ -368,13 +408,17 @@ const deleteParkingArea = async (blockName, number) => {
               placeholder="Park Numarası"
               className="px-4 py-2 mb-2 border rounded shadow"
             />
-          <button
-  onClick={handleAddToBlock}
-  disabled={points.length !== 4 || isSending}
-  className={`px-4 py-2 rounded shadow-md text-white hover:bg-green-600 ${points.length === 4 ? 'bg-green-500' : 'bg-gray-300'} ${points.length !== 4 ? 'disabled:opacity-50 cursor-not-allowed' : ''}`}
->
- 
-
+            <button
+              onClick={handleAddToBlock}
+              disabled={points.length !== 4 || isSending}
+              className={`px-4 py-2 rounded shadow-md text-white hover:bg-green-600 ${
+                points.length === 4 ? "bg-green-500" : "bg-gray-300"
+              } ${
+                points.length !== 4
+                  ? "disabled:opacity-50 cursor-not-allowed"
+                  : ""
+              }`}
+            >
               {isSending ? "Gönderiliyor..." : "Bloğa Ekle"}
             </button>
           </div>
@@ -396,26 +440,26 @@ const deleteParkingArea = async (blockName, number) => {
                 const parkNumbers = coordinatesList
                   ? Object.keys(coordinatesList)
                   : [];
-               return parkNumbers.map((parkNumber) => (
-                 <div
-                   key={`${area.id}-${parkNumber}`}
-                   className="flex justify-between items-center py-2 px-4 border-b border-gray-200"
-                 >
-                   <div>
-                     <span className="font-semibold bg-orange-300 hover:bg-orange-400  px-6 py-3 rounded-2xl ">
-                       {area.blockName} BLOK / {parkNumber}. PARK YERİ
-                     </span>
-                   </div>
-                   <button
-                     className="text-red-500 bg-white px-6 rounded-2xl py-2 hover:text-red-700 hover:bg-orange-300 transition-all cursor-pointer border-orange-300 focus:outline-none "
-                     onClick={() =>
-                       deleteParkingArea(area.blockName, parkNumber)
-                     }
-                   >
-                     Sil
-                   </button>
-                 </div>
-               ));
+                return parkNumbers.map((parkNumber) => (
+                  <div
+                    key={`${area.id}-${parkNumber}`}
+                    className="flex justify-between items-center py-2 px-4 border-b border-gray-200"
+                  >
+                    <div>
+                      <span className="font-semibold bg-orange-300 hover:bg-orange-400  px-6 py-3 rounded-2xl ">
+                        {area.blockName} BLOK / {parkNumber}. PARK YERİ
+                      </span>
+                    </div>
+                    <button
+                      className="text-red-500 bg-white px-6 rounded-2xl py-2 hover:text-red-700 hover:bg-orange-300 transition-all cursor-pointer border-orange-300 focus:outline-none "
+                      onClick={() =>
+                        deleteParkingArea(area.blockName, parkNumber)
+                      }
+                    >
+                      Sil
+                    </button>
+                  </div>
+                ));
               })
             )}
           </div>
