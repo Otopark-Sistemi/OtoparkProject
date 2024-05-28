@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ScrollView,
   View,
@@ -9,10 +9,11 @@ import {
   ActivityIndicator,
   Keyboard,
   KeyboardAvoidingView,
+  RefreshControl,
 } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import colors from "../../assets/colors/color";
-import {ApıUrl} from "../../constants/ApıUrl"
+import { ApıUrl } from "../../constants/ApıUrl";
 const { width, height } = Dimensions.get("window");
 
 const w = width / 10;
@@ -23,23 +24,30 @@ export default function HomeScreen() {
   const [blocksData, setBlocksData] = useState([]);
   const [searchData, setSearchData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    const fetchBlocks = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(ApıUrl.get); // Backend API URL
-        const data = await response.json();
-        setBlocksData(data);
-      } catch (error) {
-        console.error("Error fetching parking blocks:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+ const fetchBlocks = async () => {
+   setLoading(true);
+   try {
+     const response = await fetch(ApıUrl.get);
+     const data = await response.json();
+     setBlocksData(data);
+   } catch (error) {
+     console.error("Error fetching parking blocks:", error);
+   } finally {
+     setLoading(false);
+   }
+ };
 
-    fetchBlocks();
-  }, []);
+ const onRefresh = useCallback(async () => {
+   setRefreshing(true);
+   await fetchBlocks();
+   setRefreshing(false);
+ }, []);
+
+ useEffect(() => {
+   fetchBlocks();
+ }, []);
 
   useEffect(() => {
     if (plaka === "") {
@@ -73,10 +81,13 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "black" }}>
-      <View style={{ marginTop:30}} 
-       
-       >
+    <ScrollView
+      style={{ flex: 1, backgroundColor: "black" }}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
+      <View style={{ marginTop: 30 }}>
         <ThemedView
           style={{
             alignItems: "center",
@@ -158,7 +169,7 @@ export default function HomeScreen() {
       {loading ? (
         <ActivityIndicator size="large" color="#fff" />
       ) : searchData ? (
-        <View style={{marginTop:40}} >
+        <View style={{ marginTop: 40 }}>
           {searchData === "not found" ? (
             <ThemedView
               style={{
@@ -169,8 +180,8 @@ export default function HomeScreen() {
                 width: w * 9,
                 position: "relative",
                 backgroundColor: "#222",
-                  borderRadius: 20,
-                
+                borderRadius: 20,
+
                 shadowColor: "#000",
                 shadowOffset: {
                   width: 0,
@@ -253,7 +264,7 @@ export default function HomeScreen() {
                   fontSize: 20,
                   color: "white",
                   fontWeight: "400",
-                        marginTop: 10,
+                  marginTop: 10,
                   marginBottom: 20,
                 }}
               >
@@ -273,7 +284,7 @@ export default function HomeScreen() {
                 <View
                   style={{
                     backgroundColor: "cyan",
-                          marginBottom: h*0.1,
+                    marginBottom: h * 0.1,
                     padding: 15,
                     width: w * 5,
 
@@ -406,6 +417,6 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
       )}
-    </View>
+    </ScrollView>
   );
 }
