@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Keyboard,
+  KeyboardAvoidingView,
 } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import colors from "../../assets/colors/color";
@@ -73,7 +74,9 @@ export default function HomeScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "black" }}>
-      <View style={{ flex: 1 }}>
+      <View style={{ marginTop:30}} 
+       
+       >
         <ThemedView
           style={{
             alignItems: "center",
@@ -153,9 +156,9 @@ export default function HomeScreen() {
         </ThemedView>
       </View>
       {loading ? (
-        <ActivityIndicator size="large" color="#fff" style={{ flex: 3 }} />
+        <ActivityIndicator size="large" color="#fff" />
       ) : searchData ? (
-        <View style={{ flex: 3 }}>
+        <View style={{marginTop:40}} >
           {searchData === "not found" ? (
             <ThemedView
               style={{
@@ -166,7 +169,8 @@ export default function HomeScreen() {
                 width: w * 9,
                 position: "relative",
                 backgroundColor: "#222",
-                borderRadius: 20,
+                  borderRadius: 20,
+                
                 shadowColor: "#000",
                 shadowOffset: {
                   width: 0,
@@ -227,7 +231,7 @@ export default function HomeScreen() {
               style={{
                 alignItems: "center",
                 justifyContent: "center",
-                height: h * 3,
+                height: h * 4,
                 margin: "auto",
                 width: w * 9,
                 position: "relative",
@@ -249,7 +253,8 @@ export default function HomeScreen() {
                   fontSize: 20,
                   color: "white",
                   fontWeight: "400",
-                  marginTop: 20,
+                        marginTop: 10,
+                  marginBottom: 20,
                 }}
               >
                 ARAÇ BULUNDU
@@ -259,17 +264,16 @@ export default function HomeScreen() {
                   borderRadius: 10,
                   padding: 10,
                   marginTop: 10,
-
                   justifyContent: "space-evenly",
                   alignItems: "center",
                   width: w * 5,
-                  height: h * 2,
+                  height: h * 3,
                 }}
               >
                 <View
                   style={{
                     backgroundColor: "cyan",
-                    marginBottom: 10,
+                          marginBottom: h*0.1,
                     padding: 15,
                     width: w * 5,
 
