@@ -20,7 +20,7 @@ git clone https://github.com/kullanici/otopark-tanima-sistemi.git
 # Proje Görselleri
 
 ## Park Alanları
-![Park Alanları](https://github.com/Otopark-Sistemi/OtoparkProject/blob/main/Web-Mobil/Web/src/img/parkalanları.png?raw=true)
+![Park Alanları](https://github.com/Otopark-Sistemi/OtoparkProject/blob/main/Web-Mobil/Web/src/img/parkalanları.png)
 
 ## Otoparkım
 ![Otoparkım](https://github.com/Otopark-Sistemi/OtoparkProject/blob/main/Web-Mobil/Web/src/img/otoparkım.png?raw=true)
