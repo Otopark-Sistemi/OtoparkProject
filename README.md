@@ -1,5 +1,6 @@
 # Otopark Tanıma Sistemi
 
+
 Bu proje, otoparka giren araçların plakalarını tanıyarak ve bu bilgileri bir veritabanına kaydederek işleyen bir otopark yönetim sistemidir. Proje, web ve mobil uygulamalara plaka ve park yeri bilgilerini sağlamak için bir backend servisi ile entegre çalışır.
 
 ## Özellikler
@@ -15,3 +16,4 @@ Projeyi yerel ortamınıza klonlayın:
 
 ```bash
 git clone https://github.com/kullanici/otopark-tanima-sistemi.git
+![alt text]('src/img/aracbulundumobil.png')
