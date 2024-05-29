@@ -16,27 +16,26 @@ Projeyi yerel ortamınıza klonlayın:
 
 ```bash
 git clone https://github.com/kullanici/otopark-tanima-sistemi.git
-# Proje Görselleri
 
 # Proje Görselleri
 
 ## Park Alanları
-![Park Alanları](./web/src/img/parkalanları.png)
+![Park Alanları](https://github.com/Otopark-Sistemi/OtoparkProject/blob/main/Web-Mobil/Web/src/img/parkalanları.png?raw=true)
 
 ## Otoparkım
-![Otoparkım](./web/src/img/otoparkım.png)
+![Otoparkım](https://github.com/Otopark-Sistemi/OtoparkProject/blob/main/Web-Mobil/Web/src/img/otoparkım.png?raw=true)
 
 ## Otopark İstatistik
-![Otopark İstatistik](./web/src/img/otopark%20istatistik.png)
+![Otopark İstatistik](https://github.com/Otopark-Sistemi/OtoparkProject/blob/main/Web-Mobil/Web/src/img/otopark%20istatistik.png?raw=true)
 
 ## Otopark Canlı Veri Akışı
-![Otopark Canlı Veri Akışı](./web/src/img/otopark%20canlı%20veri%20akısı.png)
+![Otopark Canlı Veri Akışı](https://github.com/Otopark-Sistemi/OtoparkProject/blob/main/Web-Mobil/Web/src/img/otopark%20canlı%20veri%20akısı.png?raw=true)
 
 ## Mobil Araç Bulunamadı
-![Mobil Araç Bulunamadı](./web/src/img/mobilaraçbulunamadı.png)
+![Mobil Araç Bulunamadı](https://github.com/Otopark-Sistemi/OtoparkProject/blob/main/Web-Mobil/Web/src/img/mobilaraçbulunamadı.png?raw=true)
 
 ## Mobil Otopark
-![Mobil Otopark](./web/src/img/mobil%20otopark.png)
+![Mobil Otopark](https://github.com/Otopark-Sistemi/OtoparkProject/blob/main/Web-Mobil/Web/src/img/mobil%20otopark.png?raw=true)
 
 ## Araç Bulundu Mobil
-![Araç Bulundu Mobil](./web/src/img/araçbulundumobil.png)
+![Araç Bulundu Mobil](https://github.com/Otopark-Sistemi/OtoparkProject/blob/main/Web-Mobil/Web/src/img/ara%C3%A7bulundumobil.png?raw=true)
