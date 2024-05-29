@@ -18,23 +18,25 @@ Projeyi yerel ortamınıza klonlayın:
 git clone https://github.com/kullanici/otopark-tanima-sistemi.git
 # Proje Görselleri
 
+# Proje Görselleri
+
 ## Park Alanları
-![Park Alanları](./src/img/parkalanları.png)
+![Park Alanları](./web/src/img/parkalanları.png)
 
 ## Otoparkım
-![Otoparkım](./images/otoparkım.png)
+![Otoparkım](./web/src/img/otoparkım.png)
 
 ## Otopark İstatistik
-![Otopark İstatistik](./images/otopark istatistik.png)
+![Otopark İstatistik](./web/src/img/otopark%20istatistik.png)
 
 ## Otopark Canlı Veri Akışı
-![Otopark Canlı Veri Akışı](./images/otopark canlı veri akısı.png)
+![Otopark Canlı Veri Akışı](./web/src/img/otopark%20canlı%20veri%20akısı.png)
 
 ## Mobil Araç Bulunamadı
-![Mobil Araç Bulunamadı](./images/mobilaraçbulunamadı.png)
+![Mobil Araç Bulunamadı](./web/src/img/mobilaraçbulunamadı.png)
 
 ## Mobil Otopark
-![Mobil Otopark](./images/mobil otopark.png)
+![Mobil Otopark](./web/src/img/mobil%20otopark.png)
 
 ## Araç Bulundu Mobil
-![Araç Bulundu Mobil](./images/araçbulundumobil.png)
+![Araç Bulundu Mobil](./web/src/img/araçbulundumobil.png)
