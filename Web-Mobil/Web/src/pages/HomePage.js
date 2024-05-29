@@ -33,6 +33,10 @@ const Dashboard = () => {
   const [weeklyEntries, setWeeklyEntries] = useState([]);
   const [weeklyExits, setWeeklyExits] = useState([]);
 
+  const [logs, setLogs] = useState([]);
+
+  const [filter, setFilter] = useState("all");
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -71,36 +75,41 @@ const Dashboard = () => {
         const response = await fetch(ApıUrl.statistic);
         const data = await response.json();
 
-        const today = new Date().toISOString().slice(0, 10);
-
+        let totalCost = 0;
         let entryCount = 0;
         let exitCount = 0;
 
-        data.forEach((entry) => {
-          const entryDate = entry.girisSaati.slice(0, 10);
-          const exitDate = entry.cikisSaati
-            ? entry.cikisSaati.slice(0, 10)
-            : null;
-
-          if (entryDate === today) {
-            entryCount++;
-          }
-
-          if (exitDate === today) {
-            exitCount++;
-          }
-        });
-
-        setDailyEntries(entryCount);
-        setDailyExits(exitCount);
+        const today = new Date().toISOString().slice(0, 10);
 
         const weeklyEntriesCount = new Array(7).fill(0);
         const weeklyExitsCount = new Array(7).fill(0);
+
+        const updatedLogs = [];
 
         data.forEach((entry) => {
           const entryDate = new Date(entry.girisSaati);
           const exitDate = entry.cikisSaati ? new Date(entry.cikisSaati) : null;
 
+          // Calculate total cost
+          if (entry.totalCost) {
+            totalCost += entry.totalCost;
+          }
+
+          // Calculate daily entries and exits
+          const entryDateStr = entryDate.toISOString().slice(0, 10);
+          const exitDateStr = exitDate
+            ? exitDate.toISOString().slice(0, 10)
+            : null;
+
+          if (entryDateStr === today) {
+            entryCount++;
+          }
+
+          if (exitDateStr === today) {
+            exitCount++;
+          }
+
+          // Calculate weekly entries and exits
           const dayOfWeek = entryDate.getDay();
           weeklyEntriesCount[dayOfWeek]++;
 
@@ -108,10 +117,34 @@ const Dashboard = () => {
             const exitDayOfWeek = exitDate.getDay();
             weeklyExitsCount[exitDayOfWeek]++;
           }
+
+          // Format log messages
+          const formattedEntryTimestamp = formatDate(entryDate);
+          const formattedExitTimestamp = exitDate ? formatDate(exitDate) : null;
+
+          if (entryDateStr === today) {
+            updatedLogs.push({
+              timestamp: formattedEntryTimestamp,
+              message: `${entry.blockName} blok ${entry.parkNumber}. park yerine  ${entry.plaka} numaralı araç giriş yaptı.`,
+              highlight: true,
+            });
+          }
+
+          if (exitDateStr === today) {
+            updatedLogs.push({
+              timestamp: formattedExitTimestamp,
+              message: `${entry.blockName} bloğundan ${entry.parkNumber}. park yerine ${entry.plaka} numaralı araç çıkış yaptı. Ödenen Ücret: ${entry.totalCost} TL`,
+              highlight: true,
+            });
+          }
         });
 
+        setTotalCost(totalCost);
+        setDailyEntries(entryCount);
+        setDailyExits(exitCount);
         setWeeklyEntries(weeklyEntriesCount);
         setWeeklyExits(weeklyExitsCount);
+        setLogs(updatedLogs);
       } catch (error) {
         console.error("Error fetching entry/exit data:", error);
       }
@@ -157,6 +190,17 @@ const Dashboard = () => {
     ],
   };
 
+  const earningsData = {
+    labels: ["Toplam Kazanç"],
+    datasets: [
+      {
+        label: "Toplam Kazanç",
+        data: [totalCost],
+        backgroundColor: "rgba(75, 192, 192, 0.6)",
+      },
+    ],
+  };
+
   const options = {
     scales: {
       y: {
@@ -168,18 +212,10 @@ const Dashboard = () => {
     },
   };
 
-  const [logs, setLogs] = useState([
-    {
-      timestamp: "2024-05-20 10:00:00",
-      message: "34 ABC 123 plakalı araç giriş yaptı.",
-    },
-    {
-      timestamp: "2024-05-20 10:05:00",
-      message: "34 XYZ 789 plakalı araç çıkış yaptı. Ödenen Ücret: 50 TL",
-    },
-  ]);
-
-  const [filter, setFilter] = useState("all");
+  const formatDate = (date) => {
+    const options = { hour12: false, hour: "2-digit", minute: "2-digit" };
+    return new Date(date).toLocaleString("tr-TR", options);
+  };
 
   const handleFilterChange = (e) => {
     setFilter(e.target.value);
@@ -190,6 +226,13 @@ const Dashboard = () => {
     window.location.href = "/";
   };
 
+  const filteredLogs =
+    filter === "all"
+      ? logs
+      : filter === "entry"
+      ? logs.filter((log) => log.message.includes("giriş"))
+      : logs.filter((log) => log.message.includes("çıkış"));
+
   return (
     <div className="p-6">
       <div className="flex justify-end mb-6">
@@ -197,7 +240,7 @@ const Dashboard = () => {
           onClick={handleLogout}
           className="bg-red-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-600"
         >
-          Logout
+          Çıkış Yap
         </button>
       </div>
 
@@ -214,12 +257,12 @@ const Dashboard = () => {
           <h2 className="text-xl font-bold">Dolu Park Yeri</h2>
           <p className="text-2xl">{occupiedSpots}</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-md">
+        {/* <div className="bg-white p-4 rounded-lg shadow-md">
           <h2 className="text-xl font-bold">Günlük Giriş/Çıkış</h2>
           <p className="text-2xl">
             {dailyEntries}/{dailyExits}
           </p>
-        </div>
+        </div> */}
       </div>
 
       <div className="grid grid-cols-2 gap-4 mb-6">
@@ -234,45 +277,47 @@ const Dashboard = () => {
         <div className="bg-white p-4 rounded-lg shadow-md">
           <h2 className="text-xl font-bold mb-4">Doluluk Oranı</h2>
           <div className="h-64">
-            <Pie data={pieData} options={options} />
-          </div>
-
-          <div className="bg-white p-4 rounded-lg shadow-md">
-            <h2 className="text-xl font-bold mb-4">Toplam Ücret</h2>
-            <div className="h-64">
-              <Bar data={costData} options={options} />
-            </div>
+            <Pie data={pieData} />
           </div>
         </div>
       </div>
 
-      <div className="mt-6 hidden">
-        <h2 className="text-xl font-bold mb-4 hidden">Log Kayıtları</h2>
-        <div className="flex justify-end mb-4">
+      <div className="bg-white p-4 rounded-lg shadow-md mb-6">
+        <h2 className="text-xl font-bold mb-4">Gelir</h2>
+        <div className="h-64">
+          <Bar data={earningsData} options={options} />
+        </div>
+      </div>
+
+      <div className="bg-white p-4 rounded-lg shadow-md mb-6">
+        <h2 className="text-xl font-bold mb-4">Günlük Giriş/Çıkış Logları</h2>
+        <div className="mb-4">
+          <label className="block mb-2">Filtrele:</label>
           <select
             value={filter}
             onChange={handleFilterChange}
-            className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="px-3 py-2 border rounded-lg"
           >
-            <option value="all">Tüm Kayıtlar</option>
-            <option value="entry">Giriş Kayıtları</option>
-            <option value="exit">Çıkış Kayıtları</option>
+            <option value="all">Hepsi</option>
+            <option value="entry">Girişler</option>
+            <option value="exit">Çıkışlar</option>
           </select>
         </div>
-        <ul className="divide-y divide-gray-200">
-          {logs.map((log, index) => (
-            <li className="py-4 flex">
-              <div className="flex items-center justify-between space-x-4">
-                <div className="flex-1 truncate">
-                  <div className="text-sm font-medium text-gray-900 truncate">
-                    {log.message}
-                  </div>
-                  <div className="text-sm text-gray-500">{log.timestamp}</div>
-                </div>
-              </div>
-            </li>
+        <div className="overflow-y-auto h-64">
+          {filteredLogs.map((log, index) => (
+            <div
+              key={index}
+              className={`flex justify-between items-center px-4 py-2 mb-2 rounded-md ${
+                log.message.includes("giriş")  ? "bg-green-100"  : "bg-red-100"  
+              }`}
+            >
+              <p className="text-sm">
+                <span className="font-bold">{log.timestamp}: </span>
+                {log.message}
+              </p>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     </div>
   );
