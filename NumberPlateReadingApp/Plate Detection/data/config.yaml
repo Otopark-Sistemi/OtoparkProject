@@ -1,0 +1,8 @@
+path: /content/drive/MyDrive/Number Plate Recognition App/Plate Detection/data/plate_dataset
+
+train: ./images/train
+val: ./images/test
+test: ./images/valid
+
+nc: 1
+names: ['licence_plate']

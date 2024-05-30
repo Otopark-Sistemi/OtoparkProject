@@ -8,69 +8,108 @@ from ultralytics import YOLO
 # Tesseract OCR'ın yolu (sisteminize göre değiştirin)
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 model_path = 'models/best.pt'  # Model yolu
-image_path = 'models/test-image-15.jpg'  # Resim yolu
+image_path = 'models/test-image-11.jpg'  # Resim yolu
+
+# Check for CUDA support and set the device
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f"Using device: {device}")
+
+# Load the YOLO model once
+try:
+    model = YOLO(model_path).to(device)
+    print("Model successfully loaded.")
+except Exception as e:
+    print(f"Error loading model: {e}")
+    exit()
+
+def check_plate_format(plate_text):
+    print(f"Checking plate format: {plate_text}")
+
+    if len(plate_text) < 5:
+        return False
+
+    # İlk iki karakterin rakam olma ve 01-81 aralığında olma kontrolü
+    if not plate_text[:2].isdigit() or not 1 <= int(plate_text[:2]) <= 81:
+        return False
+
+    # 3. karakterin harf olma kontrolü
+    if not plate_text[2].isalpha():
+        return False
+
+    # Son karakterin rakam olma kontrolü
+    if not plate_text[-1].isdigit():
+        return False
+
+    return True
 
 def detect_plate(image):
-    # Resmi yükle ve RGB'ye dönüştür
-    image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    print("Starting plate detection...")
+    # Convert the image to RGB
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    color = (0, 255, 0)
-    font = cv2.FONT_HERSHEY_SIMPLEX
+    # Create a copy of the image array
+    image_array = np.asarray(image_rgb).copy()
 
-    image_array = np.asarray(image).copy()  # Kopyalayarak readonly bayrağını kaldır
+    max_iterations = 25
+    iteration = 0
+    while iteration < max_iterations:
+        iteration += 1
+        print(f"Iteration: {iteration}")
+        results = model(image_array, device=device)[0]
+        is_detected = len(results.boxes.data.tolist())
+        cropped_image = None
+        plate_text = ""
 
-    model = YOLO(model_path)
+        if is_detected != 0:
+            print(f"Detections found: {is_detected}")
+            threshold = 0.5
+            for result in results.boxes.data.tolist():
+                x1, y1, x2, y2, score, class_id = result
+                x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
 
-    # CUDA desteği olup olmadığını kontrol edin ve cihazı belirleyin
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model.to(device)  # Modeli belirlenen cihaza taşıyın
+                if score > threshold:
+                    cropped_image = image_array[y1:y2, x1:x2]
 
-    results = model(image_array)[0]
+                    # Draw rectangle and put text on the image
+                    color = (0, 255, 0)
+                    font = cv2.FONT_HERSHEY_SIMPLEX
+                    cv2.rectangle(image_array, (x1, y1), (x2, y2), color, 2)
+                    class_name = results.names[class_id]
+                    score_percentage = score * 100
+                    text = f"{class_name}: {score_percentage:.2f}%"
+                    cv2.putText(image_array, text, (x1, y1 - 10), font, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+                    print(f"Detection: {text}")
 
-    is_detected = len(results.boxes.data.tolist())
-    cropped_image = None
-    plate_text = ""
+                    # Perform OCR
+                    pil_image = Image.fromarray(cropped_image)
+                    plate_text = pytesseract.image_to_string(pil_image,
+                                                             config='--psm 11 --oem 3 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 preserve_interword_spaces=True')
+                    plate_text = plate_text.strip()
 
-    if is_detected != 0:
-        threshold = 0.5
-        for result in results.boxes.data.tolist():
-            x1, y1, x2, y2, score, class_id = result
-            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+                    if plate_text.startswith('I'):
+                        plate_text = plate_text[1:]
+                    if plate_text.endswith('I'):
+                        plate_text = plate_text[:-1]
 
-            if score > threshold:
-                cropped_image = image_array[y1:y2, x1:x2]
+                    if check_plate_format(plate_text):
+                        print("Plaka formatı doğru:", plate_text)
+                        return plate_text
+                    else:
+                        print("Plaka formatı yanlış, tekrar okunacak:", plate_text)
+                        break
+        else:
+            print("No detection")
 
-                cv2.rectangle(image_array, (x1, y1), (x2, y2), color, 2)
-                class_name = results.names[class_id]
-                score = score * 100
-                text = f"{class_name}:%{score:.2f}"
-                cv2.putText(image_array, text, (x1, y1-10), font, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+    print("Max iterations reached, plate not detected")
+    return plate_text
 
-                # OCR işlemi
-                pil_image = Image.fromarray(cropped_image)
-                plate_text = pytesseract.image_to_string(pil_image, config='--psm 11 --oem 3 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 preserve_interword_spaces=True')
+if __name__ == "__main__":
+    # Görüntüyü yükleyin
+    image = cv2.imread(image_path)
 
-                print(plate_text)
-                print(f"Detected plate text: {plate_text.strip()}")  # Konsola yazdır
-                if plate_text.strip() == "":
-                    print("OCR işlemi başarısız, tekrar denenecek.")
-
-                # Plaka resmini büyüterek göster
-                resized_plate_image = cv2.resize(cropped_image, (cropped_image.shape[1] * 3, cropped_image.shape[0] * 3))
-
+    if image is not None:
+        print("Image successfully loaded.")
+        plate_text = detect_plate(image)
+        print("Tespit edilen plaka:", plate_text)
     else:
-        print("No detection")  # Konsola yazdır
-
-    return plate_text  # Plaka metnini döndür
-
-# Resmi yükle
-image = cv2.imread(image_path)
-
-# Plaka tespiti ve OCR işlemi
-plate_text = detect_plate(image)
-
-# Tespit edilen plaka metnini yazdır
-if plate_text:
-    print(f"Plaka Yazısı: {plate_text.strip()}")
-else:
-    print("Plaka tespit edilemedi.")
+        print("Görüntü yüklenemedi, lütfen geçerli bir dosya yolu girin.")
